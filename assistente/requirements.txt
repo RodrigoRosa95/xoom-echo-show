@@ -1,0 +1,5 @@
+faster-whisper==1.2.1
+openwakeword==0.4.0
+piper-tts==1.8.0
+websockets==17.3
+numpy==2.5.4
