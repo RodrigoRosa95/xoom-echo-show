@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log do dublado</title>
+<style>
+  body { margin: 0; background: #111; color: #ddd; font-family: monospace; }
+  #topo { position: fixed; top: 0; left: 0; right: 0; background: #222; padding: 8px 12px; font-size: 16px; }
+  #estado { color: #8c8; }
+  #log { margin: 0; padding: 48px 12px 12px; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; }
+</style>
+</head>
+<body>
+<div id="topo">📜 Busca de dublados — <span id="arquivo">…</span> · <span id="estado">conectando…</span></div>
+<pre id="log"></pre>
+<script>
+// ES5 de propósito: o navegador do Xoom é Android 4.4
+var arquivo = '', pos = -1, log = document.getElementById('log');
+function perto_do_fim() { return window.innerHeight + window.pageYOffset >= document.body.scrollHeight - 80; }
+function buscar() {
+  var x = new XMLHttpRequest();
+  x.open('GET', '/api/log-dublado?arquivo=' + encodeURIComponent(arquivo) + '&pos=' + pos);
+  x.onload = function () {
+    try {
+      var d = JSON.parse(x.responseText), descer = perto_do_fim() || pos < 0;
+      if (d.arquivo !== arquivo) log.textContent = '';
+      arquivo = d.arquivo; pos = d.pos;
+      if (d.texto) log.appendChild(document.createTextNode(d.texto));
+      if (log.textContent.length > 300000) log.textContent = log.textContent.slice(-200000);
+      document.getElementById('arquivo').textContent = arquivo || 'sem log';
+      document.getElementById('estado').textContent = d.rodando ? '● rodando agora' : '○ parado (roda às 03:30)';
+      if (descer) window.scrollTo(0, document.body.scrollHeight);
+    } catch (e) { document.getElementById('estado').textContent = 'erro'; }
+    setTimeout(buscar, 2000);
+  };
+  x.onerror = function () { document.getElementById('estado').textContent = 'sem conexão'; setTimeout(buscar, 5000); };
+  x.send();
+}
+buscar();
+</script>
+</body>
+</html>

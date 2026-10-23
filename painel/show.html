@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<title>Xoom Show</title>
+<!-- Tela no estilo Echo Show para o Xoom (WebView do Android 4.4 / Chrome 42: só ES5, sem fetch nem const) -->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #050b16; color: #fff;
+    font-family: "Roboto", sans-serif; -webkit-user-select: none; }
+  #fundo { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: -webkit-linear-gradient(top, #0b2545 0%, #050b16 70%); -webkit-transition: background 2s; }
+  #tela { position: absolute; top: 0; left: 0; right: 0; bottom: 0; -webkit-transition: opacity 2s; }
+  #esq { position: absolute; left: 50px; top: 40px; width: 700px; }
+  #hora { font-size: 190px; font-weight: 100; line-height: 1; letter-spacing: -4px; }
+  #data { font-size: 34px; color: #bcd; margin-top: 6px; }
+  #agora { margin-top: 44px; overflow: hidden; }
+  #agora .simb { float: left; font-size: 110px; line-height: 1; width: 130px; color: #ffd75e; }
+  #agora .temp { font-size: 96px; font-weight: 200; line-height: 1; }
+  #agora .txt { font-size: 28px; color: #bcd; }
+  #extras { margin-top: 28px; font-size: 25px; color: #9ab; line-height: 1.7; }
+  #dir { position: absolute; right: 40px; top: 50px; width: 420px; }
+  .dia { overflow: hidden; padding: 16px 20px; margin-bottom: 10px; background: rgba(255,255,255,0.06);
+    border-radius: 14px; font-size: 27px; }
+  .dia .nome { float: left; width: 110px; text-transform: capitalize; color: #dde; }
+  .dia .s { float: left; width: 60px; text-align: center; color: #ffd75e; }
+  .dia .mm { float: right; } .dia .min { color: #89a; margin-left: 12px; }
+  #botoes { position: absolute; left: 0; right: 0; bottom: 26px; text-align: center; }
+  #botoes a { display: inline-block; margin: 0 8px; padding: 18px 22px; min-width: 130px; font-size: 25px;
+    color: #fff; text-decoration: none; background: rgba(255,255,255,0.10); border-radius: 40px; }
+  #botoes a:active { background: rgba(80,160,255,0.5); }
+  /* faixa de voz (como a barra azul da Echo) */
+  #voz { position: absolute; left: 0; right: 0; bottom: 0; height: 0; overflow: hidden;
+    background: rgba(5,11,22,0.92); -webkit-transition: height 0.3s; }
+  #voz.on { height: 300px; }
+  #barra { height: 10px; background: -webkit-linear-gradient(left, #00caff, #2a5cff, #00caff);
+    background-size: 200% 100%; -webkit-animation: corre 1.2s linear infinite; }
+  @-webkit-keyframes corre { from { background-position: 0 0; } to { background-position: -200% 0; } }
+  #voz .ouvi { font-size: 34px; color: #9cf; margin: 34px 60px 0; }
+  #voz .resp { font-size: 38px; margin: 18px 60px 0; line-height: 1.3; }
+  #aviso { position: absolute; top: 12px; right: 20px; font-size: 18px; color: #f88; }
+</style>
+</head>
+<body>
+<div id="fundo"></div>
+<div id="tela">
+  <div id="esq">
+    <div id="hora">--:--</div>
+    <div id="data"></div>
+    <div id="agora"></div>
+    <div id="extras"></div>
+  </div>
+  <div id="dir"></div>
+  <div id="botoes">
+    <a href="#" onclick="return acao('camera_ip')">&#127909; Câmera</a>
+    <a href="/yt">&#9654; YouTube</a>
+    <a href="#" onclick="return acao('top100')">&#127925; Top 100</a>
+    <a href="#" onclick="return acao('whatsapp_vnc')">&#128172; WhatsApp</a>
+    <a href="#" onclick="return acao('abrir_app', {pacote: 'br.jellyxoom'})">&#127916; Jellyfin</a>
+  </div>
+</div>
+<div id="voz"><div id="barra"></div><div class="ouvi" id="ouvi"></div><div class="resp" id="resp"></div></div>
+<div id="aviso"></div>
+<script>
+var DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro',
+             'outubro', 'novembro', 'dezembro'];
+function $(id) { return document.getElementById(id); }
+function dois(n) { return (n < 10 ? '0' : '') + n; }
+function pegar(url, cb) {
+  var x = new XMLHttpRequest();
+  x.open('GET', url, true);
+  x.onreadystatechange = function () {
+    if (x.readyState === 4) { try { cb(x.status === 200 ? JSON.parse(x.responseText) : null); } catch (e) { cb(null); } }
+  };
+  x.send();
+}
+function acao(nome, dados) {
+  var x = new XMLHttpRequest();
+  x.open('POST', '/api/acao/' + nome, true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.send(JSON.stringify(dados || {}));
+  return false;
+}
+function relogio() {
+  var d = new Date(), h = d.getHours();
+  $('hora').innerHTML = dois(h) + ':' + dois(d.getMinutes());
+  $('data').innerHTML = DIAS[d.getDay()].charAt(0).toUpperCase() + DIAS[d.getDay()].substr(1) + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+  // de noite fica mais escuro (como o modo noturno da Echo Show)
+  $('tela').style.opacity = (h >= 22 || h < 6) ? 0.45 : 1;
+  $('fundo').style.background = (h >= 18 || h < 6)
+    ? '-webkit-linear-gradient(top, #0a1028 0%, #02040a 75%)'
+    : '-webkit-linear-gradient(top, #0b3a6e 0%, #071426 75%)';
+}
+function nomeDia(iso, i) {
+  if (i === 0) return 'hoje';
+  if (i === 1) return 'amanhã';
+  var p = iso.split('-');
+  return DIAS[new Date(+p[0], +p[1] - 1, +p[2]).getDay()].substr(0, 3);
+}
+function hhmm(iso) {
+  if (!iso || iso === 'unavailable' || iso === 'unknown') return null;
+  var d = new Date(iso);
+  return isNaN(d) ? null : dois(d.getHours()) + ':' + dois(d.getMinutes());
+}
+function tempo() {
+  pegar('/show/dados', function (d) {
+    if (!d || d.erro) { $('aviso').innerHTML = 'sem dados do Home Assistant'; return; }
+    $('aviso').innerHTML = '';
+    var a = d.agora;
+    $('agora').innerHTML = '<div class="simb">' + a.simbolo + '</div><div class="temp">' + a.temp + '°</div>' +
+      '<div class="txt">' + a.texto + ' · umidade ' + a.umidade + '% · vento ' + a.vento + ' km/h</div>';
+    var h = '';
+    for (var i = 0; i < d.dias.length; i++) {
+      var x = d.dias[i];
+      h += '<div class="dia"><span class="nome">' + nomeDia(x.data, i) + '</span><span class="s">' + x.simbolo +
+        '</span><span class="mm">' + x.max + '°<span class="min">' + x.min + '°</span></span></div>';
+    }
+    $('dir').innerHTML = h;
+    var e = [];
+    if (d.temp_quarto && !isNaN(parseFloat(d.temp_quarto))) e.push('&#127968; Quarto ' + Math.round(parseFloat(d.temp_quarto)) + '°');
+    if (hhmm(d.alarme)) e.push('&#9200; Alarme ' + hhmm(d.alarme));
+    if (hhmm(d.lembrete)) e.push('&#128221; Lembrete ' + hhmm(d.lembrete));
+    $('extras').innerHTML = e.join('<br>');
+  });
+}
+var ultimaVoz = 0;
+function voz() {
+  pegar('/show/voz', function (v) {
+    if (!v) return;
+    var ativo = v.estado === 'ouvindo' || v.estado === 'pensando' ||
+      (v.estado === 'respondeu' && (Date.now() / 1000 - v.quando) < 12);
+    $('voz').className = ativo ? 'on' : '';
+    if (!ativo) return;
+    $('barra').style.display = v.estado === 'respondeu' ? 'none' : 'block';
+    $('ouvi').innerHTML = v.estado === 'ouvindo' ? 'Ouvindo…' : (v.texto ? '“' + v.texto + '”' : '');
+    $('resp').innerHTML = v.estado === 'pensando' ? '…' : (v.resposta || '');
+  });
+}
+relogio(); tempo(); voz();
+setInterval(relogio, 1000);
+setInterval(tempo, 5 * 60 * 1000);
+setInterval(voz, 700);
+</script>
+</body>
+</html>

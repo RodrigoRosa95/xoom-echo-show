@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel do Xoom</title>
+<style>
+  :root { --fundo:#11151c; --cartao:#1b222c; --borda:#2c3644; --texto:#e6edf3; --fraco:#8b98a8; --acento:#3b82f6; --perigo:#dc2626; --ok:#16a34a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fundo); color:var(--texto); font:15px system-ui, sans-serif; }
+  header { padding:12px 16px; display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; border-bottom:1px solid var(--borda); }
+  header h1 { font-size:18px; margin:0 auto 0 0; }
+  .estado { color:var(--fraco); font-size:13px; }
+  .bolinha { display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--perigo); margin-right:5px; }
+  .bolinha.on { background:var(--ok); }
+  main { display:grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap:16px; padding:16px; max-width:1300px; margin:auto; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  section { background:var(--cartao); border:1px solid var(--borda); border-radius:10px; padding:12px; margin-bottom:16px; }
+  h2 { font-size:14px; margin:0 0 10px; color:var(--fraco); text-transform:uppercase; letter-spacing:.04em; }
+  .grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; }
+  button { background:#263140; color:var(--texto); border:1px solid var(--borda); border-radius:8px; padding:10px 6px; font:inherit; cursor:pointer; min-height:44px; }
+  button:hover { border-color:var(--acento); }
+  button:active { background:var(--acento); }
+  button.perigo { border-color:#7f1d1d; }
+  #tela { width:100%; border-radius:8px; background:#000; display:block; cursor:crosshair; user-select:none; -webkit-user-drag:none; touch-action:none; }
+  .linha { display:flex; gap:8px; align-items:center; margin-top:8px; }
+  .linha input[type=text], .linha select { flex:1; min-width:0; background:#0d1117; color:var(--texto); border:1px solid var(--borda); border-radius:8px; padding:10px; font:inherit; }
+  input[type=range] { flex:1; }
+  pre { background:#0d1117; border-radius:8px; padding:10px; max-height:240px; overflow:auto; white-space:pre-wrap; font-size:12px; margin:8px 0 0; }
+  #aviso { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#263140; border:1px solid var(--borda); padding:8px 14px; border-radius:8px; opacity:0; transition:opacity .2s; max-width:90vw; }
+  label.chk { color:var(--fraco); font-size:13px; display:flex; gap:6px; align-items:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📱 Painel do Xoom</h1>
+  <span class="estado"><span id="bol" class="bolinha"></span><span id="conexao">conectando…</span></span>
+  <span class="estado" id="info"></span>
+</header>
+<main>
+  <div>
+    <section>
+      <h2>Tela (toque ou arraste na imagem)</h2>
+      <img id="tela" alt="Tela do Xoom" draggable="false">
+      <div class="linha">
+        <button onclick="atualizarTela()">🔄 Atualizar tela</button>
+        <label class="chk"><input type="checkbox" id="auto" checked> ao vivo (a cada 3 s)</label>
+        <span id="tela_pausada" style="display:none" title="o print disputa a CPU do Xoom com o vídeo">⏸ pausada durante vídeo <button onclick="atualizarTela(true)">📸 Print agora</button></span>
+      </div>
+    </section>
+    <section>
+      <h2>Terminal root</h2>
+      <div class="linha"><input type="text" id="cmd" placeholder="ex.: df -h /sdcard"><button onclick="terminal()">Rodar</button></div>
+      <pre id="saida">—</pre>
+    </section>
+  </div>
+  <div>
+    <section>
+      <h2>Mídia</h2>
+      <div class="grade">
+        <button onclick="tecla('anterior')">⏮ Anterior</button>
+        <button onclick="tecla('retroceder')">⏪ Voltar</button>
+        <button onclick="tecla('play_pause')">⏯ Play/Pause</button>
+        <button onclick="tecla('avancar')">⏩ Avançar</button>
+        <button onclick="tecla('proximo')">⏭ Próximo</button>
+        <button onclick="tecla('play')">▶ Continuar</button>
+        <button onclick="tecla('pause')">⏸ Pausar</button>
+        <button onclick="tecla('parar')">⏹ Parar</button>
+      </div>
+    </section>
+    <section>
+      <h2>Volume e brilho</h2>
+      <div class="grade">
+        <button onclick="tecla('vol_menos')">🔉 −</button>
+        <button onclick="tecla('vol_mais')">🔊 +</button>
+        <button onclick="tecla('mudo')">🔇 Mudo</button>
+      </div>
+      <div class="linha">🔊 <input type="range" id="vol" min="0" max="15" value="7" onchange="acao('volume',{valor:+this.value})"></div>
+      <div class="linha">☀️ <input type="range" id="brilho" min="5" max="255" value="128" onchange="acao('brilho',{valor:+this.value})"></div>
+    </section>
+    <section>
+      <h2>Atalhos</h2>
+      <div class="grade">
+        <button onclick="acao('relogio_abrir')">⏰ Abrir relógio</button>
+        <button onclick="acao('relogio_fechar')">⏰ Fechar relógio</button>
+        <button onclick="acao('webcam')">📷 Iniciar webcam</button>
+        <button onclick="acao('webcam_parar')">📷 Parar webcam</button>
+        <button onclick="acao('webcam_tvbox')">📺 Webcam da TV box</button>
+        <button onclick="acao('camera_ip')">🎥 Câmera IP</button>
+        <button onclick="acao('camera_ip_parar')">⏹ Parar câmera IP</button>
+        <button onclick="acao('logs_dublado')">📜 Log do dublado</button>
+        <button onclick="acao('top100',{inicio:+val('top100_inicio')||1})">🎵 Top 100 YouTube</button>
+        <input type="number" id="top100_inicio" min="1" max="100" placeholder="a partir do nº" style="width:9em">
+        <button onclick="acao('top100_parar')">⏹ Parar Top 100</button>
+        <button onclick="window.open('/yt', 'youtube_xoom')">▶ YouTube (escolher vídeo)</button>
+        <button onclick="acao('youtube_parar')">⏹ Parar YouTube</button>
+        <button onclick="acao('whatsapp_vnc')">💬 WhatsApp do notebook (VNC)</button>
+        <button onclick="acao('girar')">🔄 Girar tela</button>
+        <button onclick="acao('fechar_app')">✖ Fechar app atual</button>
+      </div>
+    </section>
+    <section>
+      <h2>Navegação</h2>
+      <div class="grade">
+        <button onclick="tecla('voltar')">◀ Voltar</button>
+        <button onclick="tecla('home')">⌂ Início</button>
+        <button onclick="tecla('recentes')">▣ Recentes</button>
+        <button onclick="tecla('menu')">☰ Menu</button>
+        <button onclick="tecla('cima')">▲</button>
+        <button onclick="tecla('baixo')">▼</button>
+        <button onclick="tecla('esquerda')">◀</button>
+        <button onclick="tecla('direita')">▶</button>
+        <button onclick="tecla('ok')">OK</button>
+      </div>
+      <div class="linha"><input type="text" id="texto" placeholder="digitar no tablet…"><button onclick="acao('texto',{texto:val('texto')})">Enviar</button><button onclick="tecla('enter')">⏎</button></div>
+    </section>
+    <section>
+      <h2>Apps e links</h2>
+      <div class="linha"><select id="apps"><option>carregando…</option></select><button onclick="acao('abrir_app',{pacote:val('apps')})">Abrir</button></div>
+      <div class="linha"><input type="text" id="link" placeholder="https://…"><button onclick="acao('abrir_link',{url:val('link')})">Abrir link</button></div>
+    </section>
+    <section>
+      <h2>Energia</h2>
+      <div class="grade">
+        <button onclick="acao('acordar')">💡 Acordar</button>
+        <button onclick="acao('apagar_tela')">🌙 Apagar tela</button>
+        <button class="perigo" id="btReiniciar" onclick="reiniciar()">♻ Reiniciar</button>
+      </div>
+    </section>
+  </div>
+</main>
+<div id="aviso"></div>
+<script>
+const $ = id => document.getElementById(id);
+const val = id => $(id).value;
+let tamanho = null;
+
+function aviso(t) { const a = $('aviso'); a.textContent = t; a.style.opacity = 1; clearTimeout(a._t); a._t = setTimeout(() => a.style.opacity = 0, 2500); }
+
+async function post(url, corpo) {
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo || {}) });
+    const j = await r.json();
+    aviso(j.ok ? '✔ feito' + (j.saida ? ': ' + j.saida.slice(0, 120) : '') : '✖ ' + (j.saida || 'erro'));
+    setTimeout(atualizarTela, 600);
+    return j;
+  } catch (e) { aviso('✖ sem resposta do painel'); }
+}
+const tecla = n => post('/api/tecla/' + n);
+const acao = (n, d) => post('/api/acao/' + n, d);
+
+async function terminal() {
+  $('saida').textContent = '…';
+  const j = await post('/api/acao/terminal', { comando: val('cmd') });
+  if (j) $('saida').textContent = j.saida || '(sem saída)';
+}
+$('cmd').addEventListener('keydown', e => { if (e.key === 'Enter') terminal(); });
+
+// Reiniciar pede um segundo toque (sem confirm(), que trava a página)
+function reiniciar() {
+  const b = $('btReiniciar');
+  if (b.dataset.armado) { delete b.dataset.armado; b.textContent = '♻ Reiniciar'; acao('reiniciar'); return; }
+  b.dataset.armado = 1; b.textContent = 'Tocar de novo'; setTimeout(() => { delete b.dataset.armado; b.textContent = '♻ Reiniciar'; }, 3000);
+}
+
+let carregando = false;
+// Durante vídeo (MX/VLC/Top 100) o servidor devolve o último print sem capturar: o print engasga o vídeo no Xoom
+function atualizarTela(forcar) {
+  if (carregando) return;
+  carregando = true;
+  fetch('/api/tela.png?t=' + Date.now() + (forcar === true ? '&forcar=1' : ''))
+    .then(r => { $('tela_pausada').style.display = r.headers.get('X-Tela') === 'pausada' ? '' : 'none'; return r.blob(); })
+    .then(b => new Promise(ok => { const img = new Image(); img.onload = () => ok(img); img.src = URL.createObjectURL(b); }))
+    .then(img => { const v = $('tela').src; $('tela').src = img.src; if (v.startsWith('blob:')) URL.revokeObjectURL(v);
+                   tamanho = [img.naturalWidth, img.naturalHeight]; })
+    .catch(() => {}).finally(() => { carregando = false; });
+}
+
+// Toque e arrasto na imagem → coordenadas reais da tela do tablet
+let inicio = null;
+function ponto(e) {
+  const r = $('tela').getBoundingClientRect();
+  return [Math.round((e.clientX - r.left) / r.width * tamanho[0]), Math.round((e.clientY - r.top) / r.height * tamanho[1])];
+}
+$('tela').addEventListener('pointerdown', e => { if (tamanho) inicio = { p: ponto(e), t: Date.now() }; });
+$('tela').addEventListener('pointerup', e => {
+  if (!inicio) return;
+  const [x2, y2] = ponto(e), [x1, y1] = inicio.p;
+  if (Math.hypot(x2 - x1, y2 - y1) < 15) acao('toque', { x: x1, y: y1 });
+  else acao('arrastar', { x1, y1, x2, y2, ms: Math.max(100, Date.now() - inicio.t) });
+  inicio = null;
+});
+
+async function estado() {
+  try {
+    const j = await (await fetch('/api/estado')).json();
+    $('bol').classList.toggle('on', j.conectado);
+    $('conexao').textContent = j.conectado ? 'conectado' : 'Xoom fora do ar';
+    if (j.conectado) {
+      $('info').textContent = `🔋 ${j.bateria ?? '?'}%${j.carregando ? ' ⚡' : ''} · tela ${j.tela_ligada ? 'ligada' : 'apagada'} · 📶 ${j.wifi || '—'}${j.sinal != null ? ' (' + j.sinal + ' dBm)' : ''} · app: ${j.app || '—'}`;
+      if (j.brilho != null && document.activeElement !== $('brilho')) $('brilho').value = j.brilho;
+    } else $('info').textContent = '';
+  } catch (e) { $('conexao').textContent = 'painel sem resposta'; }
+}
+
+async function carregarApps() {
+  try {
+    const j = await (await fetch('/api/apps')).json();
+    $('apps').innerHTML = j.apps.map(p => `<option>${p}</option>`).join('');
+  } catch (e) { $('apps').innerHTML = '<option>(Xoom fora do ar)</option>'; }
+}
+
+estado(); atualizarTela(); carregarApps();
+setInterval(estado, 10000);
+setInterval(() => { if ($('auto').checked && !document.hidden) atualizarTela(); }, 3000);
+</script>
+</body>
+</html>
