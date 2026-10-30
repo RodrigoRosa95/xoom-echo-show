@@ -105,6 +105,18 @@
   #musbibs a:active { background: rgba(29,185,84,0.55); }
   #musbibs a.atual { background: rgba(29,185,84,0.3); color: #9fe8b8; }
   #musprox div { font-size: 20px; color: #ccd; padding: 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* aba Letra: a linha atual fica a 1/3 da altura; o rolo anda com transform, que é leve no Tegra 2 */
+  #musabas a { display: inline-block; padding: 10px 22px; margin-right: 8px; font-size: 22px; background: rgba(255,255,255,0.08); border-radius: 14px; }
+  #musabas a.atual { background: rgba(29,185,84,0.3); color: #9fe8b8; }
+  #musletra { position: absolute; left: 0; right: 0; top: 68px; bottom: 62px; overflow: hidden; }
+  #musletra.texto { overflow-y: auto; }
+  #musrolo { position: relative; -webkit-transition: -webkit-transform .5s ease-out; }
+  #musrolo div { font-size: 26px; line-height: 1.25; color: #66778c; padding: 8px 0; }
+  #musrolo div.atual { color: #fff; font-size: 31px; }
+  #musrolo div.msg { color: #9fb3c8; font-size: 24px; }
+  #musajuste { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; line-height: 52px; font-size: 20px; color: #9fb3c8; white-space: nowrap; }
+  #musajuste a { display: inline-block; height: 52px; padding: 0 18px; margin-right: 6px; background: rgba(255,255,255,0.08); border-radius: 12px; }
+  #musajuste a:active { background: rgba(29,185,84,0.55); }
   #tvtela { display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #050b16; z-index: 40;
     text-align: center; padding-right: 300px; }
   #tvtela h1 { font-weight: 300; font-size: 44px; margin: 34px 0 6px; }
@@ -224,10 +236,17 @@
     <div id="musaviso"></div>
   </div>
   <div id="musdir">
-    <div class="rotulo">Bibliotecas</div>
-    <div id="musbibs"></div>
-    <div class="rotulo">A seguir</div>
-    <div id="musprox"></div>
+    <div id="musabas"><a href="#" id="abaLetra" onclick="return musAba('letra')">Letra</a><a href="#" id="abaFila" onclick="return musAba('fila')">Bibliotecas</a></div>
+    <div id="musparteletra">
+      <div id="musletra"><div id="musrolo"></div></div>
+      <div id="musajuste"><a href="#" onclick="return letraAjustar(-500)">&#8722;0,5 s</a><a href="#" onclick="return letraAjustar(500)">+0,5 s</a><span id="musajtxt"></span></div>
+    </div>
+    <div id="muspartefila">
+      <div class="rotulo">Bibliotecas</div>
+      <div id="musbibs"></div>
+      <div class="rotulo">A seguir</div>
+      <div id="musprox"></div>
+    </div>
   </div>
 </div>
 <div id="tvtela">
@@ -341,6 +360,10 @@ function musEstado() {
     musMini(e);
     if (!musTimer) return;
     MUS = e;
+    musPos = {ms: e.ms === undefined ? null : e.ms, em: Date.now()};
+    musAjuste = e.ajuste || 0;
+    $('musajtxt').innerHTML = 'Sincronia ' + (musAjuste > 0 ? '+' : '') + (musAjuste / 1000).toString().replace('.', ',') + ' s';
+    if (e.id !== LET.id || (LET.repetir && Date.now() > LET.repetir)) letraCarregar(e.id);
     var parado = !e.total || e.estado === 'parado';
     $('musnome').innerHTML = e.faixa || 'Nada na fila';
     $('musart').innerHTML = e.artista || '';
@@ -357,16 +380,83 @@ function musEstado() {
     $('musprox').innerHTML = p;
   });
 }
+// letra: /show/echo/letra/<id> traz as linhas; a posição vem do notebook a cada 3 s e aqui anda sozinha entre as consultas
+var LET = {id: '', linhas: [], tipo: '', atual: -1}, musPos = {ms: null, em: 0}, musAjuste = 0, letraTimer = null;
+function letraMsg(t) {
+  $('musrolo').style.webkitTransform = '';
+  $('musrolo').innerHTML = '';
+  var d = document.createElement('div');
+  d.className = 'msg';
+  d.textContent = t;
+  $('musrolo').appendChild(d);
+}
+function letraCarregar(id) {
+  LET = {id: id, linhas: [], tipo: '', atual: -1};
+  $('musletra').className = '';
+  if (!id) { letraMsg('Nada tocando'); return; }
+  letraMsg('Buscando a letra…');
+  pegar('/show/echo/letra/' + id, function (l) {
+    if (LET.id !== id) return;
+    if (!l || l.tentar) LET.repetir = Date.now() + 30000;
+    if (!l || !l.linhas.length) { letraMsg('Letra indisponível para esta música'); return; }
+    LET.linhas = l.linhas;
+    LET.tipo = l.tipo;
+    $('musletra').className = l.tipo === 'sinc' ? '' : 'texto';
+    $('musletra').scrollTop = 0;
+    $('musrolo').style.webkitTransform = '';
+    $('musrolo').innerHTML = '';
+    for (var i = 0; i < l.linhas.length; i++) {
+      var d = document.createElement('div');
+      d.textContent = l.linhas[i].x;    // texto de fora: nunca por innerHTML
+      $('musrolo').appendChild(d);
+    }
+    letraTique();
+  });
+}
+function letraTique(refazer) {
+  if (LET.tipo !== 'sinc' || musPos.ms === null) return;
+  var ms = musPos.ms + (MUS.estado === 'tocando' ? Date.now() - musPos.em : 0) + musAjuste, i = -1;
+  while (i + 1 < LET.linhas.length && LET.linhas[i + 1].t <= ms) i++;
+  if (i === LET.atual && !refazer) return;
+  var rolo = $('musrolo').children;
+  if (LET.atual >= 0) rolo[LET.atual].className = '';
+  LET.atual = i;
+  var y = 0;
+  if (i >= 0) {
+    rolo[i].className = 'atual';
+    y = Math.max(0, rolo[i].offsetTop - $('musletra').clientHeight / 3);
+  }
+  $('musrolo').style.webkitTransform = 'translateY(' + (-y) + 'px)';
+}
+function letraAjustar(d) {
+  musAjuste += d;
+  musPost('/show/echo/ajuste', {delta: d});
+  letraTique();
+  return false;
+}
+function musAba(a) {
+  var letra = a === 'letra';
+  $('musparteletra').style.display = letra ? 'block' : 'none';
+  $('muspartefila').style.display = letra ? 'none' : 'block';
+  $('abaLetra').className = letra ? 'atual' : '';
+  $('abaFila').className = letra ? '' : 'atual';
+  if (letra) letraTique(true);     // sem display a tela não mede as linhas: refaz a rolagem ao voltar
+  return false;
+}
 function abrirMusica() {
   $('mustela').style.display = 'block';
   clearInterval(musTimer);
   musTimer = setInterval(musEstado, 3000);
+  clearInterval(letraTimer);
+  letraTimer = setInterval(letraTique, 250);
   musEstado();
+  musAba('letra');
   return false;
 }
 function fecharMusica() {
   $('mustela').style.display = 'none';
   clearInterval(musTimer);
+  clearInterval(letraTimer);
   musTimer = null;
   return false;
 }

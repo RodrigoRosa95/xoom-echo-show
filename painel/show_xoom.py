@@ -17,6 +17,7 @@ import os
 import re
 import threading
 import time
+import urllib.parse
 import urllib.request
 
 HA = 'http://192.168.4.30'
@@ -253,11 +254,11 @@ def echo_estado(leve=False):
     except (OSError, ValueError):
         filas = {}
     f = max(filas.values(), key=lambda x: x.get('quando', 0), default=None)
-    e = {'estado': 'parado', 'faixa': '', 'artista': '', 'pos': 0, 'total': 0, 'rotulo': '', 'proximas': []}
+    e = {'estado': 'parado', 'faixa': '', 'artista': '', 'pos': 0, 'total': 0, 'rotulo': '', 'proximas': [], 'id': '', 'ms': None}
     if f and f.get('ids'):
         pos = max(0, min(f.get('pos', 0), len(f['ids']) - 1))
         faixa, _, artista = f['nomes'][pos].partition(' — ')
-        e.update(estado=f.get('estado', 'parado'), faixa=faixa, artista=artista, pos=pos + 1, total=len(f['ids']),
+        e.update(estado=f.get('estado', 'parado'), faixa=faixa, artista=artista, pos=pos + 1, total=len(f['ids']), id=f['ids'][pos],
                  rotulo=re.sub(r'^(a pasta|o|a) ', '', f.get('rotulo', '')), proximas=f['nomes'][pos + 1:pos + 5])
     if leve:
         return e
@@ -269,7 +270,125 @@ def echo_estado(leve=False):
         e['bibliotecas'] = echo_bibliotecas()
     except Exception:
         e['bibliotecas'] = []
+    e['ajuste'] = _letra_ajuste()
+    if f:   # por último: a consulta ao HA acima pode demorar e a tela conta o tempo a partir desta resposta
+        e['ms'] = _echo_ms(f)
     return e
+
+
+# letra em tempo real na tela de música (30/10/2026): 1º a letra do próprio Jellyfin (embutida na faixa, é a mesma
+# gravação), depois LRCLIB. Fica em letras/<id>.json; "nada" é tentado de novo depois de 7 dias.
+DIR_LETRAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'letras')
+ARQ_AJUSTE = os.path.join(DIR_LETRAS, 'ajuste.json')
+LETRA_NADA_DIAS = 7
+LRCLIB_FOLGA_S = 5      # duração diferente disso é outra gravação: a letra vira texto, sem marcar a linha
+AJUSTE_MAX = 10000
+
+
+def _echo_ms(f):
+    """Posição estimada da faixa em ms; None se a skill ainda não informou (fila de antes da letra)."""
+    if f.get('estado') == 'tocando' and f.get('inicioMs'):
+        return max(0, int(time.time() * 1000) - f['inicioMs'])
+    if f.get('estado') == 'pausado':
+        return f.get('parouMs')
+    return None
+
+
+def _letra_ajuste():
+    try:
+        return json.load(open(ARQ_AJUSTE, encoding='utf-8'))['ms']
+    except (OSError, ValueError, KeyError):
+        return 0
+
+
+def _gravar_json(arq, dados):
+    os.makedirs(DIR_LETRAS, exist_ok=True)
+    tmp = f'{arq}.{threading.get_ident()}.tmp'
+    with open(tmp, 'w', encoding='utf-8') as s:
+        json.dump(dados, s, ensure_ascii=False)
+    os.replace(tmp, arq)
+
+
+def echo_ajuste(delta):
+    """Soma ao ajuste de sincronia, que vale para todas as faixas (a demora é a do Echo, não a de cada música)."""
+    ms = max(-AJUSTE_MAX, min(AJUSTE_MAX, _letra_ajuste() + int(delta)))
+    _gravar_json(ARQ_AJUSTE, {'ms': ms})
+    return ms
+
+
+def _letra_jellyfin(item):
+    try:
+        linhas = _jf(f'/Audio/{item}/Lyrics').get('Lyrics') or []
+    except Exception:       # 404 = faixa sem letra
+        return None
+    if any(x.get('Start') for x in linhas):
+        return {'tipo': 'sinc', 'fonte': 'jellyfin', 'linhas': [{'t': x['Start'] // 10000, 'x': x['Text'].strip()}
+                                                                for x in linhas if x.get('Start') is not None and (x.get('Text') or '').strip()]}
+    texto = [{'x': x['Text'].strip()} for x in linhas if (x.get('Text') or '').strip()]
+    return {'tipo': 'texto', 'fonte': 'jellyfin', 'linhas': texto} if texto else None
+
+
+def _lrc(texto):
+    linhas = []
+    for bruta in texto.splitlines():
+        marcas = re.findall(r'\[(\d+):(\d+(?:\.\d+)?)\]', bruta)
+        frase = re.sub(r'\[[^\]]*\]', '', bruta).strip()
+        if frase:
+            linhas += [{'t': int((int(m) * 60 + float(s)) * 1000), 'x': frase} for m, s in marcas]
+    return sorted(linhas, key=lambda x: x['t'])
+
+
+def _lrclib(nome, artista):
+    """Resultados da busca, ou None se o site não responder (ele dá 503 com frequência, por isso as 3 tentativas)."""
+    url = 'https://lrclib.net/api/search?' + urllib.parse.urlencode({'track_name': nome, 'artist_name': artista})
+    for tentativa in range(3):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'xoom-show (github.com/RodrigoRosa95/xoom-echo-show)'})
+            with urllib.request.urlopen(req, timeout=6) as r:
+                return json.load(r)
+        except Exception:
+            time.sleep(1 + tentativa)
+    return None
+
+
+def _letra_lrclib(item):
+    """Letra do LRCLIB; None se não deu para consultar (não guarda, tenta de novo depois)."""
+    i = _jf(f'/Items?Ids={item}')['Items'][0]
+    artista = (i.get('Artists') or [''])[0].split(';')[0].strip()
+    duracao = (i.get('RunTimeTicks') or 0) / 1e7
+    nome = i.get('Name', '')
+    limpo = re.sub(r'\s*[-(\[].*$', '', nome).strip()
+    achou_texto, falhou = None, False
+    for busca in dict.fromkeys(x for x in (nome, limpo) if x):
+        res = _lrclib(busca, artista)
+        if res is None:
+            falhou = True
+            continue
+        sinc = [x for x in res if x.get('syncedLyrics') and abs((x.get('duration') or 0) - duracao) <= LRCLIB_FOLGA_S]
+        if sinc:
+            melhor = min(sinc, key=lambda x: abs(x['duration'] - duracao))
+            return {'tipo': 'sinc', 'fonte': 'lrclib', 'linhas': _lrc(melhor['syncedLyrics'])}
+        for x in res:
+            if not achou_texto and (x.get('plainLyrics') or '').strip():
+                achou_texto = [{'x': l.strip()} for l in x['plainLyrics'].splitlines() if l.strip()]
+    if achou_texto:
+        return {'tipo': 'texto', 'fonte': 'lrclib', 'linhas': achou_texto}
+    return None if falhou else {'tipo': 'nada', 'linhas': []}
+
+
+def echo_letra(item):
+    arq = os.path.join(DIR_LETRAS, item + '.json')
+    try:
+        d = json.load(open(arq, encoding='utf-8'))
+        if d['tipo'] != 'nada' or time.time() - os.path.getmtime(arq) < LETRA_NADA_DIAS * 86400:
+            return d
+    except (OSError, ValueError, KeyError):
+        pass
+    d = _letra_jellyfin(item) or _letra_lrclib(item)
+    if d is None:
+        return {'tipo': 'nada', 'linhas': [], 'tentar': True}
+    _gravar_json(arq, d)
+    return d
 
 
 # Top 50 tocando no próprio Xoom (23/10/2026): o ícone do Spotify toca a biblioteca "Top 50 Brasil" do Jellyfin num

@@ -297,6 +297,26 @@ def show_echo_estado():
         return jsonify(estado='erro', erro=str(e)[:200]), 502
 
 
+@app.route('/show/echo/letra/<item>')
+def show_echo_letra(item):
+    if not re.fullmatch(r'[0-9a-f]{32}', item):
+        abort(404)
+    try:
+        return jsonify(show_xoom.echo_letra(item))
+    except Exception as e:
+        return jsonify(tipo='nada', linhas=[], tentar=True, erro=str(e)[:200])
+
+
+@app.route('/show/echo/ajuste', methods=['POST'])
+def show_echo_ajuste():
+    d = request.get_json(silent=True) or {}
+    try:
+        ms = show_xoom.echo_ajuste(d.get('delta', 0))
+    except (TypeError, ValueError):
+        return jsonify(ok=False, erro='ajuste inválido'), 400
+    return jsonify(ok=True, comando=f'Sincronia {ms / 1000:+.1f} s'.replace('.', ','), ms=ms)
+
+
 @app.route('/show/echo/biblioteca', methods=['POST'])
 def show_echo_biblioteca():
     d = request.get_json(silent=True) or {}
