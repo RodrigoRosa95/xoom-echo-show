@@ -22,6 +22,15 @@ vai chover amanhã? · comandos da casa (Assist do Home Assistant) · perguntas 
 Pelo Echo Dot: crie Rotinas na Alexa cuja resposta ("Alexa diz") contenha **"no tablet"**
 (ex.: "Mostrando a câmera no tablet") — o histórico da Alexa nem sempre traz o texto falado.
 
+## Música no Echo
+
+O ícone do Spotify na tela `/show` abre uma tela de controle da música que toca no Echo Dot: faixa e artista, anterior,
+play/pause, próxima, volume, "do início", "parar", troca de biblioteca do Jellyfin e a lista "a seguir".
+
+- Os comandos vão como texto ao Echo pelo Home Assistant (`alexa_devices.send_text_command`), via `/show/echo/<ação>`.
+- A música e o estado vêm de uma skill própria da Alexa com `AudioPlayer`, que grava a fila em
+  `~/.alexa-jellyflix-filas.json` (lida por `/show/echo/estado`). A skill não faz parte deste repositório.
+
 ## Como montar
 
 1. **Notebook** (Linux, Python 3.12):

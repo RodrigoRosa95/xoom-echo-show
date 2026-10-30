@@ -29,6 +29,8 @@ public class ShowActivity extends Activity {
         web = new WebView(this);
         web.setBackgroundColor(Color.rgb(5, 11, 22));
         web.getSettings().setJavaScriptEnabled(true);
+        // o Top 50 toca num <audio> da página: sem isto a faixa seguinte (evento "ended") não começa sozinha
+        web.getSettings().setMediaPlaybackRequiresUserGesture(false);
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, String url) {

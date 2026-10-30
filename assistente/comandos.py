@@ -16,6 +16,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.expanduser('~/xoom-painel'))
 import show_xoom      # noqa: E402  (tempo do HA)
+import agenda         # noqa: E402  (Google Agenda, ~/xoom-assistente)
 import youtube_xoom   # noqa: E402  (busca do YouTube)
 
 PAINEL = 'http://127.0.0.1:8796'
@@ -57,16 +58,80 @@ def _ha_assist(texto):
     return entendeu, fala
 
 
+GROQ_IA = ('openai/gpt-oss-120b', 'openai/gpt-oss-20b')   # 28/10: ~1 s contra 9–10 s do `claude -p` (abre o programa a cada vez)
+
+
+def _prompt_ia(pergunta):
+    return ('Você é a assistente de voz de um tablet numa casa em Guaíba (RS). Responda em português do Brasil, '
+            'em no máximo 2 frases curtas e naturais, para ser lida em voz alta (sem markdown, sem listas, '
+            f'sem emojis). Data/hora agora: {datetime.datetime.now():%d/%m/%Y %H:%M}. Pergunta: {pergunta}')
+
+
+def _groq(pergunta):
+    """Pergunta geral pela Groq (chave GROQ_API_KEY do ~/.env). Erro/demora → None (aí vai o Claude)."""
+    chave = next((l.split('=', 1)[1].strip().strip('"\'') for l in open(os.path.expanduser('~/.env'), encoding='utf-8')
+                  if l.startswith('GROQ_API_KEY=')), '')
+    if not chave:
+        return None
+    for modelo in GROQ_IA:
+        corpo = {'model': modelo, 'temperature': 0.3, 'max_completion_tokens': 600, 'reasoning_effort': 'low',
+                 'messages': [{'role': 'user', 'content': _prompt_ia(pergunta)}]}
+        req = urllib.request.Request('https://api.groq.com/openai/v1/chat/completions', json.dumps(corpo).encode(), {
+            'Authorization': 'Bearer ' + chave, 'Content-Type': 'application/json', 'User-Agent': 'xoom-assistente'})
+        try:
+            with urllib.request.urlopen(req, timeout=6) as r:
+                resp = re.sub(r'[*#_`]', '', json.load(r)['choices'][0]['message']['content'] or '').strip()
+            if resp:
+                return resp
+        except Exception as e:
+            print('groq (ia):', modelo, repr(e)[:150], flush=True)
+    return None
+
+
 def _claude(pergunta):
-    prompt = ('Você é a assistente de voz de um tablet numa casa em Guaíba (RS). Responda em português do Brasil, '
-              'em no máximo 2 frases curtas e naturais, para ser lida em voz alta (sem markdown, sem listas, '
-              f'sem emojis). Data/hora agora: {datetime.datetime.now():%d/%m/%Y %H:%M}. Pergunta: {pergunta}')
     try:
-        r = subprocess.run([CLAUDE, '-p', '--model', 'haiku', prompt], capture_output=True, text=True, timeout=60)
+        r = subprocess.run([CLAUDE, '-p', '--model', 'haiku', _prompt_ia(pergunta)], capture_output=True, text=True,
+                           timeout=60)
         resp = re.sub(r'[*#_`]', '', r.stdout).strip()
         return resp or 'Não consegui pensar numa resposta agora.'
     except subprocess.TimeoutExpired:
         return 'Demorei demais para pensar. Pergunta de novo?'
+
+
+def _ia(pergunta):
+    """Groq primeiro; se falhar, o Claude (haiku) de antes. ROTA diz quem respondeu."""
+    global ROTA
+    resp = _groq(pergunta)
+    if resp:
+        ROTA = 'groq'
+        return resp
+    ROTA = 'claude'
+    return _claude(pergunta)
+
+
+def _volume_echo(t):
+    """28/10: "volume da Alexa/do Echo 4", "diminui a Alexa para 4", "aumenta o Echo" → volume do Echo Dot
+    (send_text_command, como os botões do Show). Frase sem Alexa/Echo continua sendo o volume do tablet."""
+    if not re.search(r'\b(alexa|echo|eco|equo)\b', t):
+        return None
+    n = re.search(r'\b(\d{1,3})\b', t)
+    palavra = next((v for k, v in NUMEROS.items() if re.search(rf'\b{k}\b', t)), None)
+    sobe = re.search(r'\b(aumenta|aumentar|aumente|sobe|subir|suba|mais alto)\b', t)
+    desce = re.search(r'\b(diminui|diminuir|diminua|abaixa|abaixar|abaixe|baixa|baixar|desce|descer|mais baixo)\b', t)
+    if not (re.search(r'\bvolume\b', t) or sobe or desce):
+        return None
+    if n or palavra is not None:
+        v = int(n.group(1)) if n else palavra
+        v = min(10, v // 10 if v > 10 else v)            # "volume 50" = 5
+        texto, resposta = f'volume {v}', f'Volume da Alexa em {v}.'
+    elif sobe or desce:
+        texto = 'aumenta o volume' if sobe else 'abaixa o volume'
+        resposta = 'Aumentei o volume da Alexa.' if sobe else 'Abaixei o volume da Alexa.'
+    else:
+        return None
+    show_xoom._ha('/api/services/alexa_devices/send_text_command',
+                  {'device_id': show_xoom._echo_device_id(), 'text_command': texto})
+    return resposta
 
 
 def _tempo(t):
@@ -106,17 +171,25 @@ def _youtube(t):
     return f"Tocando {v['titulo'][:70]}."
 
 
+ROTA = 'local'   # por onde saiu a última resposta (local / ha / claude): o assistente mede os tempos por rota
+
+
 def responder(texto, permitir_ia=True):
     """Executa o comando e devolve a frase de resposta (ou None se não for nada que o tablet saiba fazer)."""
+    global ROTA
+    ROTA = 'local'
     t = normalizar(texto)
     t = re.sub(r'\b(no|na|do|da|pro|para o|pra) (tablet|xoom|zoom|tela)\b', '', t).strip()
+    echo = _volume_echo(t)                  # antes de tirar o "alexa" do começo da frase
+    if echo:
+        return echo
     t = re.sub(r'^(hey |ei )?(jarvis|alexa)\b', '', t).strip()
     if not t:
         return None
     # ---- comandos do tablet ----
     # fechar vem antes de abrir: "fecha o whatsapp" contém "whatsapp" e abriria de novo
     # ("para" só no começo: "toca X para mim no youtube" não é fechar)
-    fechar = re.search(r'\b(fecha|fechar|feche|fechando|desliga|desligar|tira|tirar|sai|sair|encerra|encerrar)\b', t) \
+    fechar = re.search(r'\b(fecha|fecho|fechar|feche|fechando|desliga|desligar|tira|tirar|sai|sair|encerra|encerrar)\b', t) \
         or re.search(r'^(para|parar|pare|parando)\b', t)
     if fechar:
         if 'whatsapp' in t or 'zap' in t:
@@ -137,7 +210,7 @@ def responder(texto, permitir_ia=True):
             terminal('am start -n br.xoomshow/.ShowActivity')
             return 'Parei o Top 100.'
     if re.search(r'\b(camera|cameras|garagem|portao)\b', t):
-        if re.search(r'\b(fecha|fechar|feche|fechando|para|parar|pare|desliga|desligar|tira|tirar|sai|sair)\b', t):
+        if re.search(r'\b(fecha|fecho|fechar|feche|fechando|para|parar|pare|desliga|desligar|tira|tirar|sai|sair)\b', t):
             acao('camera_ip_parar')
             terminal('am start -n br.xoomshow/.ShowActivity')
             return 'Fechei a câmera.'
@@ -161,8 +234,8 @@ def responder(texto, permitir_ia=True):
         terminal('input keyevent 126')
         return 'Continuando.'
     # "para" também é preposição: só vale no começo da frase ou seguido do que está tocando
-    if (re.search(r'^(para|parar|pare|parando|chega|fecha|fechar|fechando|sai|sair)\b', t) or
-            re.search(r'\b(para|pare|parar|fecha|desliga) (o |a )?(video|musica|tudo|camera)\b', t)) \
+    if (re.search(r'^(para|parar|pare|parando|chega|fecha|fecho|fechar|fechando|sai|sair)\b', t) or
+            re.search(r'\b(para|pare|parar|fecha|fecho|desliga) (o |a )?(video|musica|tudo|camera)\b', t)) \
             and not re.search(r'\b(tv|televisao|luz|luzes)\b', t):
         acao('top100_parar')
         acao('youtube_parar')
@@ -185,6 +258,8 @@ def responder(texto, permitir_ia=True):
     if re.search(r'\b(tela inicial|relogio|inicio|show|tela principal)\b', t):
         terminal('am start -n br.xoomshow/.ShowActivity')
         return 'Pronto.'
+    if re.search(r'\b(compromisso|compromissos|agenda|reuniao|evento)\b', t):
+        return agenda.falar_proximo()
     if re.search(r'\b(tempo|previsao|temperatura|chover|chuva|calor|frio)\b', t):
         return _tempo(t)
     if re.search(r'\b(que horas|horas sao|hora e)\b', t):
@@ -200,8 +275,10 @@ def responder(texto, permitir_ia=True):
     try:
         entendeu, fala = _ha_assist(texto)
         if entendeu and fala:
+            ROTA = 'ha'
             return fala
     except Exception:
         pass
     # ---- pergunta geral ----
-    return _claude(texto) if permitir_ia else None
+    ROTA = 'claude'
+    return _ia(texto) if permitir_ia else None

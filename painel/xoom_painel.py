@@ -10,6 +10,7 @@ Página: http://<ip-do-notebook>:8796/
 Roda no pm2 como "xoom-painel". Usa o adb-server do notebook (5037), o mesmo do Home Assistant.
 """
 import io
+import json
 import ipaddress
 import os
 import re
@@ -18,6 +19,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import urllib.error
 import urllib.parse
 
 from flask import Flask, Response, abort, jsonify, redirect, request, send_file
@@ -52,9 +54,11 @@ WEBCAMS = [
 # Log do buscar_dublado (um arquivo por dia, AAAA-MM-DD.log) mostrado ao vivo em /logs
 LOGS_DUBLADO = os.path.expanduser('~/buscar-dublado/logs')
 URL_LOGS = 'http://192.168.4.135:8796/logs'
+# painel PS2 + TV box (~/ps2-monitor): versão xoom.html (script convertido p/ o Chromium 49, gerar_xoom.py)
+URL_PS2 = 'http://192.168.4.135:8770/xoom.html'
 URL_TOP100 = 'http://192.168.4.135:8796/top100.ts'
 # Webcam da TV box (DroidCam, MJPEG, 1 cliente por vez) aberta no VLC do Xoom
-WEBCAM_TVBOX = 'http://192.168.4.121:4747/video'
+WEBCAM_TVBOX = 'http://192.168.4.79:4747/video'
 # Câmera IP Yoosee (RTSP HEVC) convertida no notebook e aberta no MX Player do Xoom
 URL_CAMERA_IP = 'http://192.168.4.135:8796/camera.ts'
 
@@ -165,7 +169,155 @@ def show_dados():
 
 @app.route('/show/voz')
 def show_voz():
+    try:                                       # batimento da tela (a cada 0,7 s): o vigia-xoom.sh vê se travou
+        open('/tmp/xoom-show-visto', 'w').close()
+    except OSError:
+        pass
     return jsonify(show_xoom.voz())
+
+
+@app.route('/show/trofeu')
+def show_trofeu():
+    # 🏆 conquista desbloqueada no PS2 (xoom-assistente grava ao ver o histórico do videos.py da TV box)
+    try:
+        with open('/tmp/xoom-trofeu.json', encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    except (OSError, ValueError):
+        return jsonify({'seq': 0})
+
+
+@app.route('/show/movimento')
+def show_movimento():
+    # movimento_garagem.py (PM2 movimento-garagem) grava aqui quando vê alguém na garagem
+    try:
+        with open('/tmp/xoom-movimento.json') as f:
+            return jsonify(json.load(f))
+    except (OSError, ValueError):
+        return jsonify({'quando': 0})
+
+
+@app.route('/show/quadro')
+def show_quadro():
+    return jsonify(show_xoom.quadro())
+
+
+@app.route('/show/capa/<app_>/<ident>')
+def show_capa(app_, ident):
+    arq = show_xoom.capa(app_, ident)
+    if not arq:
+        abort(404)
+    return send_file(arq, mimetype='image/jpeg', max_age=86400)
+
+
+@app.route('/show/luzes')
+def show_luzes():
+    return jsonify(show_xoom.luzes())
+
+
+@app.route('/show/tv', methods=['POST'])
+def show_tv():
+    d = request.get_json(silent=True) or {}
+    try:
+        return jsonify(ok=True, comando=show_xoom.tv(bool(d.get('ligar'))))
+    except Exception as e:
+        return jsonify(ok=False, erro=str(e)[:200]), 502
+
+
+@app.route('/show/tv/estado')
+def show_tv_estado():
+    try:
+        return jsonify(show_xoom.tv_estado())
+    except Exception as e:
+        return jsonify(estado='erro', erro=str(e)[:200]), 502
+
+
+@app.route('/show/tv/<acao>', methods=['POST'])
+def show_tv_controle(acao):
+    d = request.get_json(silent=True) or {}
+    try:
+        return jsonify(ok=True, comando=show_xoom.tv_controle(acao, d.get('valor')))
+    except ValueError as e:
+        return jsonify(ok=False, erro=str(e)), 400
+    except Exception as e:
+        return jsonify(ok=False, erro=str(e)[:200]), 502
+
+
+@app.route('/show/luz', methods=['POST'])
+def show_luz():
+    d = request.get_json(silent=True) or {}
+    try:
+        return jsonify(ok=True, comando=show_xoom.luz(str(d.get('nome', '')), bool(d.get('ligar'))))
+    except ValueError as e:
+        return jsonify(ok=False, erro=str(e)), 400
+    except Exception as e:
+        return jsonify(ok=False, erro=str(e)[:200]), 502
+
+
+@app.route('/show/spotify', methods=['POST'])
+def show_spotify():
+    try:
+        return jsonify(ok=True, comando=show_xoom.spotify_top50())
+    except Exception as e:
+        return jsonify(ok=False, erro=str(e)[:200]), 502
+
+
+@app.route('/show/musica/lista')
+def show_musica_lista():
+    try:
+        return jsonify(faixas=show_xoom.musica_lista())
+    except Exception as e:
+        return jsonify(faixas=[], erro=str(e)[:200]), 502
+
+
+@app.route('/show/musica/<item_id>.mp3')
+def show_musica(item_id):
+    if not re.fullmatch(r'[0-9a-f]{32}', item_id):
+        abort(404)
+    try:
+        r = show_xoom.musica_abrir(item_id, request.headers.get('Range'))
+    except urllib.error.HTTPError as e:
+        abort(e.code)
+    cab = {h: r.headers[h] for h in ('Content-Length', 'Accept-Ranges', 'Content-Range') if r.headers.get(h)}
+
+    def pedacos():
+        with r:
+            while True:
+                b = r.read(65536)
+                if not b:
+                    break
+                yield b
+    return Response(pedacos(), status=r.status, headers=cab, mimetype='audio/mpeg', direct_passthrough=True)
+
+
+@app.route('/show/echo/estado')
+def show_echo_estado():
+    try:
+        return jsonify(show_xoom.echo_estado(leve=request.args.get('leve') == '1'))
+    except Exception as e:
+        return jsonify(estado='erro', erro=str(e)[:200]), 502
+
+
+@app.route('/show/echo/biblioteca', methods=['POST'])
+def show_echo_biblioteca():
+    d = request.get_json(silent=True) or {}
+    try:
+        return jsonify(ok=True, comando=show_xoom.echo_biblioteca(str(d.get('nome', ''))))
+    except ValueError as e:
+        return jsonify(ok=False, erro=str(e)), 400
+    except Exception as e:
+        return jsonify(ok=False, erro=str(e)[:200]), 502
+
+
+@app.route('/show/echo/<acao>', methods=['POST'])
+def show_echo(acao):
+    if acao not in show_xoom.ECHO_CONTROLES and acao not in ('mais', 'menos'):
+        abort(404)
+    try:
+        if acao in ('mais', 'menos'):
+            return jsonify(ok=True, comando=show_xoom.echo_volume(1 if acao == 'mais' else -1))
+        return jsonify(ok=True, comando=show_xoom.echo_controle(acao))
+    except Exception as e:
+        return jsonify(ok=False, erro=str(e)[:200]), 502
 
 
 @app.route('/yt')
@@ -356,6 +508,14 @@ def acao(nome):
         camera_ip.parar()
         sh('am force-stop com.mxtech.videoplayer.ad')
         cod, s = 0, 'câmera IP parada'
+    elif nome == 'ps2_painel':
+        subprocess.run(['python3', os.path.expanduser('~/ps2-monitor/gerar_xoom.py')], timeout=150,
+                       env=dict(os.environ, PATH='/opt/node/bin:' + os.environ.get('PATH', '/usr/bin:/bin')))
+        _, p = sh('dumpsys power | grep mScreenOn')
+        if 'mScreenOn=false' in p:
+            sh('input keyevent 26')
+        # Chromium 49: o WebView do Show (Chromium 33) e o Chrome 42 não rodam o script do painel
+        cod, s = sh(f"am start -a android.intent.action.VIEW -n org.chromium.chrome/com.google.android.apps.chrome.Main -d '{URL_PS2}'")
     elif nome == 'logs_dublado':
         _, p = sh('dumpsys power | grep mScreenOn')
         if 'mScreenOn=false' in p:

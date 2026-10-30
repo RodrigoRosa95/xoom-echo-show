@@ -29,6 +29,107 @@
   #botoes a { display: inline-block; margin: 0 8px; padding: 18px 22px; min-width: 130px; font-size: 25px;
     color: #fff; text-decoration: none; background: rgba(255,255,255,0.10); border-radius: 40px; }
   #botoes a:active { background: rgba(80,160,255,0.5); }
+  /* lâmpadas da Alexa: uma pílula por lâmpada com Liga | Desliga */
+  #luzes { position: absolute; left: 20px; right: 330px; white-space: nowrap; bottom: 112px; text-align: center; }
+  #luzes .luz { display: inline-block; margin: 0 5px; background: rgba(255,255,255,0.08); border-radius: 40px;
+    font-size: 24px; overflow: hidden; }
+  #luzes .nome { display: inline-block; padding: 16px 10px 16px 16px; color: #ffd75e; text-transform: capitalize; }
+  #luzes a { display: inline-block; padding: 16px 14px; color: #fff; text-decoration: none;
+    border-left: 1px solid rgba(255,255,255,0.15); }
+  #luzes a:active { background: rgba(255,215,94,0.45); }
+  /* ícone do Spotify: abre a tela de música do Echo (#mustela) */
+  #spotify { position: absolute; right: 30px; bottom: 30px; width: 62px; height: 62px; border-radius: 50%;
+    background: #1db954; box-shadow: 0 2px 10px rgba(0,0,0,.5);
+    z-index: 5; }   /* acima do #botoes, que ocupa a largura toda e roubava o toque */
+  #spotify:active { background: #1ed760; }
+  #spotify svg { position: absolute; left: 13px; top: 13px; }
+  /* controles do Echo acima do ícone do Spotify: volume − / + e pausa / play */
+  #echoctl { position: absolute; right: 22px; bottom: 112px; z-index: 5; background: rgba(255,255,255,0.08);
+    border-radius: 40px; overflow: hidden; }
+  #echoctl a { display: inline-block; width: 58px; padding: 14px 0; text-align: center; font-size: 26px;
+    color: #fff; text-decoration: none; border-left: 1px solid rgba(255,255,255,0.15); }
+  #echoctl a:first-child { border-left: 0; }
+  #echoctl a:active { background: rgba(29,185,84,0.55); }
+  #echoctl a { width: 46px; font-size: 24px; }
+  #echoctl a.prox { padding: 0; height: 60px; line-height: 60px; vertical-align: top; }
+  #echoctl a.prox svg { vertical-align: middle; }
+  #spotify.tocando { -webkit-animation: pulsa 2s ease-in-out infinite; }
+  @-webkit-keyframes pulsa { 0%, 100% { box-shadow: 0 0 0 0 rgba(29,185,84,.7); } 50% { box-shadow: 0 0 0 12px rgba(29,185,84,0); } }
+  /* faixa que está tocando, acima dos controles */
+  #tocando { position: absolute; right: 22px; bottom: 178px; z-index: 6; max-width: 400px; font-size: 19px;
+    color: #9fe8b8; background: rgba(5,11,22,0.88); border-radius: 16px; padding: 3px 14px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* ícone PS2 (canto inferior esquerdo): painel PS2 + TV box no Chromium 49 */
+  #ps2 { position: absolute; left: 30px; bottom: 30px; width: 62px; height: 62px; border-radius: 50%; z-index: 5;
+    background: radial-gradient(circle at 35% 30%, #2c5fb8, #0b2a66); box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+  #ps2 svg { position: absolute; left: 6px; top: 10px; }
+  #ps2:active { background: #2f6fd0; }
+  #luzaviso { position: absolute; left: 0; right: 0; bottom: 186px; text-align: center; font-size: 22px; color: #ffd75e; }
+  /* 🏆 conquista desbloqueada no PS2: cartão estilo PS4 no canto, 7 s (xoom-assistente toca o plim) */
+  #trofeu { position: absolute; top: 24px; right: 24px; width: 470px; z-index: 40; padding: 14px 16px;
+    background: rgba(18, 22, 34, 0.95); border-radius: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.6);
+    border-left: 5px solid #e8b84a; color: #fff; -webkit-transform: translateX(560px); transform: translateX(560px);
+    -webkit-transition: -webkit-transform .45s ease-out; transition: transform .45s ease-out; }
+  #trofeu.on { -webkit-transform: translateX(0); transform: translateX(0); }
+  #trofeu img { float: left; width: 84px; height: 84px; border-radius: 10px; margin-right: 14px; }
+  #trofeu .cab { font-size: 17px; color: #e8b84a; letter-spacing: .5px; }
+  #trofeu .nome { font-size: 25px; font-weight: bold; margin-top: 2px; }
+  #trofeu .desc { font-size: 17px; color: #b8c2d8; margin-top: 3px; max-height: 44px; overflow: hidden; }
+  #trofeu .pts { font-size: 16px; color: #8a96b0; margin-top: 4px; }
+  /* câmera da garagem por cima de tudo quando há movimento (movimento_garagem.py) */
+  /* tela da TV (toque no "📺 TV" da fileira das luzes) */
+  /* tela de música: controla o que a skill "meu cinema" toca no Echo */
+  #mustela { display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #050b16; z-index: 40; }
+  #mustela a { color: #fff; text-decoration: none; }
+  #mustela .voltar { position: absolute; left: 24px; top: 24px; font-size: 26px; padding: 14px 24px;
+    background: rgba(255,255,255,0.1); border-radius: 18px; }
+  #musesq { position: absolute; left: 40px; top: 110px; width: 700px; text-align: center; }
+  #musnome { font-size: 42px; font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #musart { font-size: 26px; color: #9fe8b8; margin-top: 8px; min-height: 32px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #musinfo { font-size: 20px; color: #9fb3c8; margin-top: 8px; min-height: 26px; }
+  #mustrans { margin-top: 28px; }
+  #mustrans a { display: inline-block; vertical-align: middle; width: 104px; height: 104px; line-height: 104px; margin: 0 8px;
+    border-radius: 50%; background: rgba(255,255,255,0.1); }
+  #mustrans a.grande { width: 136px; height: 136px; line-height: 136px; background: #1db954; }
+  #mustrans svg { vertical-align: middle; }
+  #mustrans a:active { background: rgba(29,185,84,0.55); }
+  #musvol { margin-top: 26px; font-size: 26px; }
+  #musvol a, #musmais a { display: inline-block; padding: 16px 28px; margin: 0 6px; font-size: 26px; background: rgba(255,255,255,0.1); border-radius: 18px; }
+  #musvol a:active, #musmais a:active { background: rgba(29,185,84,0.55); }
+  #musvol span { display: inline-block; width: 190px; }
+  #musmais { margin-top: 20px; }
+  #musaviso { margin-top: 12px; font-size: 20px; color: #ffd75e; min-height: 26px; }
+  #musdir { position: absolute; left: 780px; right: 30px; top: 40px; bottom: 20px; overflow: hidden; }
+  #musdir .rotulo { font-size: 20px; color: #9fb3c8; text-transform: uppercase; letter-spacing: 2px; margin: 18px 0 10px; }
+  #musbibs a { display: block; padding: 14px 18px; margin-bottom: 8px; font-size: 24px; background: rgba(255,255,255,0.08); border-radius: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #musbibs a:active { background: rgba(29,185,84,0.55); }
+  #musbibs a.atual { background: rgba(29,185,84,0.3); color: #9fe8b8; }
+  #musprox div { font-size: 20px; color: #ccd; padding: 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #tvtela { display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #050b16; z-index: 40;
+    text-align: center; padding-right: 300px; }
+  #tvtela h1 { font-weight: 300; font-size: 44px; margin: 34px 0 6px; }
+  #tvinfo { font-size: 24px; color: #9fb3c8; min-height: 32px; }
+  #tvtela .linha { margin: 26px 0 0; }
+  #tvtela .linha a { display: inline-block; margin: 0 10px; min-width: 150px; padding: 22px 26px; font-size: 30px;
+    color: #fff; text-decoration: none; background: rgba(255,255,255,0.08); border-radius: 18px; }
+  #tvtela .linha a:active { background: rgba(255,215,94,0.45); }
+  #tvtela .linha a.atual { background: rgba(255,215,94,0.25); color: #ffd75e; }
+  #tvtela .rotulo { font-size: 20px; color: #9fb3c8; margin-top: 30px; text-transform: uppercase; letter-spacing: 2px; }
+  #tvtela .voltar { position: absolute; left: 24px; top: 24px; min-width: 0; font-size: 26px; padding: 14px 24px;
+    color: #fff; text-decoration: none; background: rgba(255,255,255,0.08); border-radius: 40px; }
+  /* setas + OK (botões do controle remoto pelo webostv.button) */
+  #tvsetas { position: absolute; right: 34px; top: 190px; width: 264px; }
+  #tvsetas a { position: absolute; width: 84px; height: 84px; line-height: 84px; font-size: 34px; color: #fff;
+    text-decoration: none; text-align: center; background: rgba(255,255,255,0.08); border-radius: 18px; }
+  #tvsetas a:active { background: rgba(255,215,94,0.45); }
+  #tvsetas a.ok { border-radius: 50%; background: rgba(255,215,94,0.22); color: #ffd75e; font-size: 28px; }
+  #tvsetas a.menor { width: 126px; height: 64px; line-height: 64px; font-size: 22px; border-radius: 40px; }
+  #tvaviso { font-size: 22px; color: #ffd75e; margin-top: 24px; min-height: 30px; }
+  #luzes .luz.tv .nome { cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,215,94,0.4); }
+  #mov { display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #000; z-index: 50; }
+  #mov img { width: 100%; height: 100%; object-fit: contain; }
+  #movtit { position: absolute; left: 0; right: 0; top: 0; padding: 14px 24px; font-size: 30px;
+            background: rgba(180, 0, 0, .75); color: #fff; }
   /* faixa de voz (como a barra azul da Echo) */
   #voz { position: absolute; left: 0; right: 0; bottom: 0; height: 0; overflow: hidden;
     background: rgba(5,11,22,0.92); -webkit-transition: height 0.3s; }
@@ -38,6 +139,30 @@
   @-webkit-keyframes corre { from { background-position: 0 0; } to { background-position: -200% 0; } }
   #voz .ouvi { font-size: 34px; color: #9cf; margin: 34px 60px 0; }
   #voz .resp { font-size: 38px; margin: 18px 60px 0; line-height: 1.3; }
+  /* quadro embaixo da previsão: cartões que trocam com transição suave (agenda do Google, estreias Sonarr/Radarr) */
+  #quadro { position: absolute; right: 40px; top: 458px; width: 420px; height: 156px; }
+  /* compromissos: à esquerda do quadro das estreias, os próximos 5 se revezando com transição suave (pedido do usuário) */
+  #agenda { position: absolute; right: 480px; top: 458px; width: 380px; height: 156px; display: none; }
+  #agenda .ag { position: absolute; top: 0; left: 0; right: 0; height: 100%; box-sizing: border-box;
+    padding: 14px 18px; border-radius: 14px; overflow: hidden; opacity: 0; -webkit-transition: opacity 1.2s;
+    background: rgba(66,133,244,0.18); border-left: 6px solid #4285f4; }
+  #agenda .ag.on { opacity: 1; }
+  #agenda .rot { font-size: 17px; color: #9bc0ff; text-transform: uppercase; letter-spacing: 1px; }
+  #agenda .tit { font-size: 26px; margin-top: 6px; line-height: 1.2; max-height: 62px; overflow: hidden; }
+  #agenda .qd { font-size: 21px; color: #cde; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #agenda .dep { font-size: 18px; color: #89a; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #quadro .cartao { position: absolute; top: 0; left: 0; right: 0; height: 100%; box-sizing: border-box;
+    padding: 14px 18px; border-radius: 14px; overflow: hidden; opacity: 0; -webkit-transition: opacity 1.2s; }
+  #quadro .cartao.on { opacity: 1; }
+  #quadro .agenda { background: rgba(66,133,244,0.18); border-left: 6px solid #4285f4; }
+  #quadro .serie { background: rgba(156,95,255,0.16); border-left: 6px solid #9c5fff; }
+  #quadro .filme { background: rgba(255,170,40,0.14); border-left: 6px solid #ffaa28; }
+  #quadro img { float: left; width: 88px; height: 132px; margin-right: 16px; border-radius: 8px; background: #123; }
+  #quadro .rot { font-size: 17px; color: #9bc0ff; text-transform: uppercase; letter-spacing: 1px; }
+  #quadro .serie .rot { color: #c9a8ff; } #quadro .filme .rot { color: #ffd08a; }
+  #quadro .tit { font-size: 26px; margin-top: 6px; line-height: 1.2; max-height: 62px; overflow: hidden; }
+  #quadro .qd { font-size: 21px; color: #cde; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #quadro .dep { font-size: 18px; color: #89a; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #aviso { position: absolute; top: 12px; right: 20px; font-size: 18px; color: #f88; }
 </style>
 </head>
@@ -51,6 +176,29 @@
     <div id="extras"></div>
   </div>
   <div id="dir"></div>
+  <div id="agenda"><div class="ag" id="agA"></div><div class="ag" id="agB"></div></div>
+  <div id="quadro"><div class="cartao" id="cartaoA"></div><div class="cartao" id="cartaoB"></div></div>
+  <div id="luzaviso"></div>
+  <div id="luzes"></div>
+  <div id="tocando" style="display:none"></div>
+  <div id="echoctl"><a href="#" onclick="return echoCmd('menos')">&minus;</a><a href="#" onclick="return echoCmd('mais')">+</a><a href="#" onclick="return echoCmd('anterior')" class="prox"><svg width="22" height="20" viewBox="0 0 22 20"><rect x="1" y="2" width="3" height="16" fill="#fff"/><path d="M12 2 L4 10 L12 18 Z M21 2 L13 10 L21 18 Z" fill="#fff"/></svg></a><a href="#" onclick="return echoCmd('pausa')">&#10074;&#10074;</a><a href="#" onclick="return echoCmd('play')">&#9654;</a><a href="#" onclick="return echoCmd('proxima')" class="prox"><svg width="22" height="20" viewBox="0 0 22 20"><path d="M1 2 L9 10 L1 18 Z M10 2 L18 10 L10 18 Z" fill="#fff"/><rect x="18" y="2" width="3" height="16" fill="#fff"/></svg></a></div>
+  <a id="ps2" href="#" onclick="luzAviso('Abrindo o painel PS2…'); return acao('ps2_painel')" title="Painel PS2 + TV box"><svg width="48" height="44" viewBox="0 0 48 44">
+    <!-- PS2 "fat" deitado em 3/4: tampa com frisos, frente em dois andares, luz azul; DualShock embaixo -->
+    <path d="M4 12 L12 5 L45 5 L37 12 Z" fill="#2b2b31"/>
+    <path d="M9 10.5 L15 6.2 M14 10.5 L20 6.2 M19 10.5 L25 6.2 M24 10.5 L30 6.2 M29 10.5 L35 6.2 M34 10.5 L40 6.2"
+      stroke="#17171b" stroke-width="1.4"/>
+    <path d="M37 12 L45 5 L45 16 L37 23 Z" fill="#0b0b0d"/>
+    <rect x="4" y="12" width="33" height="11" fill="#141417"/>
+    <rect x="4" y="12" width="33" height="5" fill="#1d1d22"/>
+    <rect x="7" y="13.6" width="20" height="1.8" rx=".9" fill="#2f2f36"/>
+    <circle cx="33" cy="14.6" r="1.6" fill="#3d8bff"/>
+    <rect x="7" y="19" width="4" height="2.4" fill="#2a2a30"/><rect x="13" y="19" width="4" height="2.4" fill="#2a2a30"/>
+    <path d="M14 30 Q24 26 34 30 L37 38 Q36 41 33 39 L30 35 L18 35 L15 39 Q12 41 11 38 Z" fill="#1a1a1f"
+      stroke="#3b3b44" stroke-width=".6"/>
+    <circle cx="18.5" cy="31.2" r="1.3" fill="#444"/><circle cx="29.5" cy="31.2" r="1.3" fill="#444"/>
+    <circle cx="21.5" cy="33.6" r="1.1" fill="#333"/><circle cx="26.5" cy="33.6" r="1.1" fill="#333"/>
+  </svg></a>
+  <a id="spotify" href="#" onclick="return abrirMusica()" title="Música no Echo"><svg width="36" height="36" viewBox="0 0 24 24"><g fill="none" stroke="#000" stroke-linecap="round"><path d="M5 8.5c4.6-1.4 9.8-1 14 1.3" stroke-width="2.4"/><path d="M6 12.4c3.8-1.1 8-.8 11.4 1.1" stroke-width="2"/><path d="M7 16.1c3-.8 6.1-.6 8.8.8" stroke-width="1.6"/></g></svg></a>
   <div id="botoes">
     <a href="#" onclick="return acao('camera_ip')">&#127909; Câmera</a>
     <a href="/yt">&#9654; YouTube</a>
@@ -59,6 +207,59 @@
     <a href="#" onclick="return acao('abrir_app', {pacote: 'br.jellyxoom'})">&#127916; Jellyfin</a>
   </div>
 </div>
+<div id="trofeu"><img id="trofimg" alt=""><div class="cab">🏆 CONQUISTA DESBLOQUEADA</div><div class="nome" id="trofnome"></div><div class="desc" id="trofdesc"></div><div class="pts" id="trofpts"></div></div>
+<div id="mustela">
+  <a class="voltar" href="#" onclick="return fecharMusica()">&#8592; Fechar</a>
+  <div id="musesq">
+    <div id="musnome">…</div>
+    <div id="musart"></div>
+    <div id="musinfo"></div>
+    <div id="mustrans">
+      <a href="#" onclick="return echoCmd('anterior')"><svg width="44" height="40" viewBox="0 0 22 20"><rect x="1" y="2" width="3" height="16" fill="#fff"/><path d="M12 2 L4 10 L12 18 Z M21 2 L13 10 L21 18 Z" fill="#fff"/></svg></a>
+      <a href="#" class="grande" id="musplay" onclick="return echoAlternar()"></a>
+      <a href="#" onclick="return echoCmd('proxima')"><svg width="44" height="40" viewBox="0 0 22 20"><path d="M1 2 L9 10 L1 18 Z M10 2 L18 10 L10 18 Z" fill="#fff"/><rect x="18" y="2" width="3" height="16" fill="#fff"/></svg></a>
+    </div>
+    <div id="musvol"><a href="#" onclick="return echoCmd('menos')">&#8722;</a><span id="musnivel">Volume —</span><a href="#" onclick="return echoCmd('mais')">+</a></div>
+    <div id="musmais"><a href="#" onclick="return echoCmd('inicio')">Do início</a><a href="#" onclick="return echoCmd('parar')">Parar</a></div>
+    <div id="musaviso"></div>
+  </div>
+  <div id="musdir">
+    <div class="rotulo">Bibliotecas</div>
+    <div id="musbibs"></div>
+    <div class="rotulo">A seguir</div>
+    <div id="musprox"></div>
+  </div>
+</div>
+<div id="tvtela">
+  <a class="voltar" href="#" onclick="return fecharTv()">&#8592; Fechar</a>
+  <h1>&#128250; TV da sala</h1>
+  <div id="tvinfo">…</div>
+  <div class="linha">
+    <a href="#" onclick="return tv(true)">Liga</a>
+    <a href="#" onclick="return tv(false)">Desliga</a>
+  </div>
+  <div class="rotulo">Volume</div>
+  <div class="linha">
+    <a href="#" onclick="return tvCtl('menos')">&#8722; Baixar</a>
+    <a href="#" onclick="return tvCtl('mudo')">&#128263; Mudo</a>
+    <a href="#" onclick="return tvCtl('mais')">+ Subir</a>
+  </div>
+  <div class="rotulo">Apps</div>
+  <div class="linha" id="tvapps"></div>
+  <div class="rotulo">Entrada</div>
+  <div class="linha" id="tventradas"></div>
+  <div id="tvaviso"></div>
+  <div id="tvsetas">
+    <a href="#" style="left: 90px; top: 0" onclick="return tvBotao('UP')">&#9650;</a>
+    <a href="#" style="left: 0; top: 90px" onclick="return tvBotao('LEFT')">&#9664;</a>
+    <a href="#" class="ok" style="left: 90px; top: 90px" onclick="return tvBotao('ENTER')">OK</a>
+    <a href="#" style="left: 180px; top: 90px" onclick="return tvBotao('RIGHT')">&#9654;</a>
+    <a href="#" style="left: 90px; top: 180px" onclick="return tvBotao('DOWN')">&#9660;</a>
+    <a href="#" class="menor" style="left: 0; top: 296px" onclick="return tvBotao('BACK')">&#8617; Voltar</a>
+    <a href="#" class="menor" style="left: 138px; top: 296px" onclick="return tvBotao('HOME')">&#127968; Início</a>
+  </div>
+</div>
+<div id="mov" onclick="fecharMov()"><img id="movimg" alt=""><div id="movtit">🚨 Movimento na garagem — toque para fechar</div></div>
 <div id="voz"><div id="barra"></div><div class="ouvi" id="ouvi"></div><div class="resp" id="resp"></div></div>
 <div id="aviso"></div>
 <script>
@@ -80,6 +281,188 @@ function acao(nome, dados) {
   x.open('POST', '/api/acao/' + nome, true);
   x.setRequestHeader('Content-Type', 'application/json');
   x.send(JSON.stringify(dados || {}));
+  return false;
+}
+var LUZES = [];
+function luzes() {
+  pegar('/show/luzes', function (l) {
+    if (!l) return;
+    LUZES = l;
+    var h = '';
+    for (var i = 0; i < l.length; i++) {
+      h += '<span class="luz"><span class="nome">&#128161; ' + l[i].nome.replace(/^luz d[aoe]s? /i, '') + '</span>' +
+        '<a href="#" onclick="return luz(' + i + ', true)">Liga</a>' +
+        '<a href="#" onclick="return luz(' + i + ', false)">Desliga</a></span>';
+    }
+    h += '<span class="luz tv"><span class="nome" onclick="abrirTv()">&#128250; TV</span>' +
+      '<a href="#" onclick="return tv(true)">Liga</a><a href="#" onclick="return tv(false)">Desliga</a></span>';
+    $('luzes').innerHTML = h;
+  });
+}
+var luzTimer = null;
+function luzAviso(t) {
+  $('luzaviso').innerHTML = t;
+  clearTimeout(luzTimer);
+  luzTimer = setTimeout(function () { $('luzaviso').innerHTML = ''; }, 5000);
+}
+// música no Echo (skill "meu cinema"): estado em /show/echo/estado, a cada 3 s com a tela aberta e 10 s fora dela
+var musTimer = null, MUS = {}, ICONE_PLAY = '<svg width="56" height="56" viewBox="0 0 20 20"><path d="M5 2 L18 10 L5 18 Z" fill="#fff"/></svg>',
+  ICONE_PAUSA = '<svg width="56" height="56" viewBox="0 0 20 20"><rect x="4" y="2" width="4" height="16" fill="#fff"/><rect x="12" y="2" width="4" height="16" fill="#fff"/></svg>';
+function musAviso(t) {
+  if (musTimer) { $('musaviso').innerHTML = t; clearTimeout(musAviso.t); musAviso.t = setTimeout(function () { $('musaviso').innerHTML = ''; }, 4000); }
+  else luzAviso(t);
+}
+function musPost(url, corpo, depois) {
+  var x = new XMLHttpRequest();
+  x.open('POST', url, true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.onreadystatechange = function () {
+    if (x.readyState !== 4) return;
+    var r = {};
+    try { r = JSON.parse(x.responseText); } catch (e) {}
+    musAviso(r.ok ? (depois || r.comando) : 'Não consegui: ' + (r.erro || x.status));
+    setTimeout(musEstado, 1500);
+    setTimeout(musEstado, 4000);
+  };
+  x.send(JSON.stringify(corpo || {}));
+}
+function echoCmd(a) { musPost('/show/echo/' + a); return false; }
+function echoAlternar() { return echoCmd(MUS.estado === 'tocando' ? 'pausa' : 'play'); }
+function echoBib(i) { musPost('/show/echo/biblioteca', {nome: MUS.bibliotecas[i]}, 'Tocando ' + MUS.bibliotecas[i]); return false; }
+function musMini(e) {
+  var tocando = e.estado === 'tocando';
+  $('tocando').style.display = tocando ? 'block' : 'none';
+  $('tocando').innerHTML = tocando ? '&#127925; ' + e.faixa + (e.artista ? ' — ' + e.artista : '') : '';
+  $('spotify').className = tocando ? 'tocando' : '';
+}
+function musEstado() {
+  pegar('/show/echo/estado' + (musTimer ? '' : '?leve=1'), function (e) {
+    if (!e || e.estado === 'erro') { if (musTimer) $('musnome').innerHTML = 'Sem resposta do servidor'; return; }
+    musMini(e);
+    if (!musTimer) return;
+    MUS = e;
+    var parado = !e.total || e.estado === 'parado';
+    $('musnome').innerHTML = e.faixa || 'Nada na fila';
+    $('musart').innerHTML = e.artista || '';
+    $('musinfo').innerHTML = e.total ? (e.estado === 'tocando' ? 'Tocando' : parado ? 'Parado' : 'Pausado') + ' · ' + e.rotulo + ' · ' + e.pos + ' de ' + e.total : 'Escolha uma biblioteca';
+    $('musplay').innerHTML = e.estado === 'tocando' ? ICONE_PAUSA : ICONE_PLAY;
+    $('musnivel').innerHTML = 'Volume ' + (e.volume === null || e.volume === undefined ? '—' : e.volume);
+    var h = '';
+    for (var i = 0; i < (e.bibliotecas || []).length; i++) {
+      h += '<a href="#" class="' + (e.bibliotecas[i] === e.rotulo ? 'atual' : '') + '" onclick="return echoBib(' + i + ')">&#127925; ' + e.bibliotecas[i] + '</a>';
+    }
+    $('musbibs').innerHTML = h;
+    var p = '';
+    for (var j = 0; j < e.proximas.length; j++) p += '<div>' + e.proximas[j] + '</div>';
+    $('musprox').innerHTML = p;
+  });
+}
+function abrirMusica() {
+  $('mustela').style.display = 'block';
+  clearInterval(musTimer);
+  musTimer = setInterval(musEstado, 3000);
+  musEstado();
+  return false;
+}
+function fecharMusica() {
+  $('mustela').style.display = 'none';
+  clearInterval(musTimer);
+  musTimer = null;
+  return false;
+}
+setInterval(function () { if (!musTimer) musEstado(); }, 10000);
+musEstado();
+// tela da TV: estado/volume/entrada vêm do HA (/show/tv/estado), atualizados a cada 3 s enquanto aberta
+var tvTimer = null, TV_ENTRADAS = [], TV_APPS = [];
+var TV_ICONES = {'Jellyfin': '&#127916; ', 'YouTube': '&#9654; '};
+function avisar(t) {
+  if (tvTimer) { $('tvaviso').innerHTML = t; clearTimeout(avisar.t); avisar.t = setTimeout(function () { $('tvaviso').innerHTML = ''; }, 5000); }
+  else luzAviso(t);
+}
+function abrirTv() {
+  $('tvtela').style.display = 'block';
+  tvEstado();
+  clearInterval(tvTimer);
+  tvTimer = setInterval(tvEstado, 3000);
+  return false;
+}
+function fecharTv() {
+  $('tvtela').style.display = 'none';
+  clearInterval(tvTimer);
+  tvTimer = null;
+  return false;
+}
+function tvEstado() {
+  pegar('/show/tv/estado', function (e) {
+    if (!e || e.estado === 'erro') { $('tvinfo').innerHTML = 'Sem resposta do Home Assistant'; return; }
+    if (e.estado !== 'on') $('tvinfo').innerHTML = 'Desligada';
+    else $('tvinfo').innerHTML = 'Ligada · ' + (e.entrada || '—') + ' · volume ' +
+      (e.mudo ? 'mudo' : (e.volume === null ? '—' : e.volume));
+    var h = '';
+    for (var i = 0; i < e.entradas.length; i++) {
+      h += '<a href="#" class="' + (e.estado === 'on' && e.entradas[i] === e.entrada ? 'atual' : '') +
+        '" onclick="return tvCtl(\'entrada\', ' + i + ')">' + e.entradas[i] + '</a>';
+    }
+    var a = '';
+    for (var j = 0; j < e.apps.length; j++) {
+      a += '<a href="#" class="' + (e.estado === 'on' && e.apps[j] === e.entrada ? 'atual' : '') +
+        '" onclick="return tvCtl(\'app\', ' + j + ')">' + (TV_ICONES[e.apps[j]] || '') + e.apps[j] + '</a>';
+    }
+    $('tvapps').innerHTML = a;
+    TV_APPS = e.apps;
+    TV_ENTRADAS = e.entradas;
+    $('tventradas').innerHTML = h;
+  });
+}
+function tvCtl(acao, i) {
+  var valor = acao === 'entrada' ? TV_ENTRADAS[i] : acao === 'app' ? TV_APPS[i] : null;
+  if (acao === 'app') { acao = 'entrada'; avisar('Abrindo ' + valor + ' na TV…'); }
+  var x = new XMLHttpRequest();
+  x.open('POST', '/show/tv/' + acao, true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.onreadystatechange = function () {
+    if (x.readyState !== 4) return;
+    if (x.status !== 200) avisar('A TV não respondeu (' + x.status + ')');
+    else if (valor) avisar('Na TV: ' + valor);
+    setTimeout(tvEstado, 600);
+  };
+  x.send(JSON.stringify({valor: valor}));
+  return false;
+}
+function tvBotao(b) {
+  var x = new XMLHttpRequest();
+  x.open('POST', '/show/tv/botao', true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.onreadystatechange = function () {
+    if (x.readyState === 4 && x.status !== 200) avisar('A TV não recebeu a tecla (' + x.status + ')');
+    else if (x.readyState === 4 && b === 'HOME') setTimeout(tvEstado, 1500);
+  };
+  x.send(JSON.stringify({valor: b}));
+  return false;
+}
+function tv(ligar) {
+  avisar(ligar ? 'Ligando a TV…' : 'Desligando a TV…');
+  var x = new XMLHttpRequest();
+  x.open('POST', '/show/tv', true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.onreadystatechange = function () {
+    if (x.readyState === 4) avisar(x.status === 200 ? (ligar ? 'TV ligando (Wake-on-LAN)' : 'TV desligada')
+                                                       : 'Não consegui ' + (ligar ? 'ligar' : 'desligar') + ' a TV (' + x.status + ')');
+  };
+  x.send(JSON.stringify({ligar: ligar}));
+  return false;
+}
+function luz(i, ligar) {
+  var nome = LUZES[i].nome;
+  luzAviso((ligar ? 'Ligando ' : 'Desligando ') + nome + '…');
+  var x = new XMLHttpRequest();
+  x.open('POST', '/show/luz', true);
+  x.setRequestHeader('Content-Type', 'application/json');
+  x.onreadystatechange = function () {
+    if (x.readyState === 4) luzAviso(x.status === 200 ? 'Pedido à Alexa: ' + (ligar ? 'ligar ' : 'desligar ') + nome
+                                                       : 'A Alexa não recebeu o pedido (' + x.status + ')');
+  };
+  x.send(JSON.stringify({nome: nome, ligar: ligar}));
   return false;
 }
 function relogio() {
@@ -122,14 +505,77 @@ function tempo() {
     if (hhmm(d.alarme)) e.push('&#9200; Alarme ' + hhmm(d.alarme));
     if (hhmm(d.lembrete)) e.push('&#128221; Lembrete ' + hhmm(d.lembrete));
     $('extras').innerHTML = e.join('<br>');
+    mostrarAgenda(d.agenda);
   });
+}
+function quandoEvento(ev) {
+  var d = new Date(ev.inicio), hoje = new Date(), am = new Date();
+  am.setDate(hoje.getDate() + 1);
+  var dia = d.toDateString() === hoje.toDateString() ? 'Hoje' : d.toDateString() === am.toDateString() ? 'Amanhã' :
+    DIAS[d.getDay()].charAt(0).toUpperCase() + DIAS[d.getDay()].substr(1) + ', ' + d.getDate() + '/' + (d.getMonth() + 1);
+  return dia + (ev.dia_todo ? ' · dia todo' : ' · ' + dois(d.getHours()) + ':' + dois(d.getMinutes()));
+}
+/* ---- quadro rotativo: ESTREIAS (do /show/quadro); a agenda tem cartão fixo próprio (#agenda) ---- */
+var ESTREIAS = [], CARTAO = -1, CAMADA = 0;
+function esc(t) { return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+function cartoes() {
+  var c = [];
+  for (var i = 0; i < ESTREIAS.length; i++) {
+    var e = ESTREIAS[i], serie = e.grupo.indexOf('série') >= 0;
+    c.push({classe: serie ? 'serie' : 'filme',
+      html: (e.capa ? '<img src="' + e.capa + '">' : '') +
+        '<div class="rot">' + (serie ? '&#128250; ' : '&#127916; ') + esc(e.grupo) + '</div>' +
+        '<div class="tit">' + esc(e.titulo) + '</div><div class="qd">' + esc(e.linha) + '</div>' +
+        '<div class="dep">' + esc(e.quando) + '</div>'});
+  }
+  return c;
+}
+function girarQuadro() {
+  var c = cartoes();
+  if (!c.length) { $('cartaoA').className = $('cartaoB').className = 'cartao'; return; }
+  CARTAO = (CARTAO + 1) % c.length;
+  var nova = CAMADA ? $('cartaoA') : $('cartaoB'), velha = CAMADA ? $('cartaoB') : $('cartaoA');
+  CAMADA = 1 - CAMADA;
+  nova.innerHTML = c[CARTAO].html;
+  nova.className = 'cartao ' + c[CARTAO].classe + ' on';   // entra suave por cima
+  velha.className = velha.className.replace(' on', '');    // a anterior some suave
+}
+function estreias() {
+  pegar('/show/quadro', function (q) { if (q && q.cartoes) ESTREIAS = q.cartoes; });
+}
+/* ---- compromissos: até 5, um por vez, trocando com transição suave como o quadro das estreias ---- */
+var AGENDA = [], AG_I = -1, AG_CAMADA = 0, AG_CHAVE = '';
+function cartaoAgenda(i) {
+  if (!AGENDA.length) return '<div class="rot">&#128197; Compromissos</div><div class="qd">Nada nos próximos 14 dias</div>';
+  var e = AGENDA[i];
+  return '<div class="rot">&#128197; ' + (i === 0 ? 'Próximo compromisso' : 'Compromisso') +
+    (AGENDA.length > 1 ? ' · ' + (i + 1) + ' de ' + AGENDA.length : '') + '</div>' +
+    '<div class="tit">' + esc(e.titulo) + '</div><div class="qd">' + quandoEvento(e) + '</div>' +
+    (e.local ? '<div class="dep">&#128205; ' + esc(e.local.substr(0, 40)) + '</div>' : '');
+}
+function girarAgenda() {
+  if ($('agenda').style.display !== 'block') return;
+  if (AGENDA.length <= 1 && AG_I >= 0) return;                 // 0 ou 1 compromisso: fica parado
+  AG_I = AGENDA.length ? (AG_I + 1) % AGENDA.length : 0;
+  var nova = AG_CAMADA ? $('agA') : $('agB'), velha = AG_CAMADA ? $('agB') : $('agA');
+  AG_CAMADA = 1 - AG_CAMADA;
+  nova.innerHTML = cartaoAgenda(AG_I);
+  nova.className = 'ag on';                                     // entra suave por cima
+  velha.className = 'ag';                                       // a anterior some suave
+}
+function mostrarAgenda(a) {
+  if (!a || !a.configurado) { $('agenda').style.display = 'none'; return; }
+  AGENDA = (a.eventos || []).slice(0, 5);
+  var chave = JSON.stringify(AGENDA);
+  $('agenda').style.display = 'block';
+  if (chave !== AG_CHAVE) { AG_CHAVE = chave; AG_I = -1; girarAgenda(); }   // mudou: recomeça pelo próximo
 }
 var ultimaVoz = 0;
 function voz() {
   pegar('/show/voz', function (v) {
     if (!v) return;
     var ativo = v.estado === 'ouvindo' || v.estado === 'pensando' ||
-      (v.estado === 'respondeu' && (Date.now() / 1000 - v.quando) < 12);
+      (v.estado === 'respondeu' && (Date.now() / 1000 - v.quando) < Math.max(12, (v.resposta || '').length / 10));  /* só texto: a voz sai no Echo */
     $('voz').className = ativo ? 'on' : '';
     if (!ativo) return;
     $('barra').style.display = v.estado === 'respondeu' ? 'none' : 'block';
@@ -137,9 +583,54 @@ function voz() {
     $('resp').innerHTML = v.estado === 'pensando' ? '…' : (v.resposta || '');
   });
 }
-relogio(); tempo(); voz();
+var movVisto = 0, movFim = 0;
+function fecharMov() {
+  $('mov').style.display = 'none';
+  $('movimg').src = '';                    /* solta o /camera.mjpg (o ffmpeg do notebook para) */
+  movFim = 0;
+}
+function movimento() {
+  pegar('/show/movimento', function (m) {
+    if (m && m.quando > movVisto) {
+      var novo = movVisto > 0 || (Date.now() / 1000 - m.quando) < 45;
+      movVisto = m.quando;
+      if (novo) {
+        if (!movFim) $('movimg').src = '/camera.mjpg?t=' + Date.now();
+        $('mov').style.display = 'block';
+        movFim = Date.now() + 45000;
+      }
+    }
+    if (movFim && Date.now() > movFim) fecharMov();
+  });
+}
+relogio(); tempo(); voz(); luzes(); estreias(); movimento();
+setInterval(movimento, 2000);
+var trofVisto = -1, trofTimer = null;
+function trofeu() {
+  pegar('/show/trofeu', function (t) {
+    if (!t || !t.seq) { if (trofVisto < 0) trofVisto = 0; return; }
+    if (trofVisto < 0) { trofVisto = t.seq; return; }       /* ao abrir a tela não repete o último */
+    if (t.seq === trofVisto) return;
+    trofVisto = t.seq;
+    $('trofimg').style.visibility = t.medalha ? 'visible' : 'hidden';   /* teste e conquista sem medalha: sem ícone quebrado */
+    if (t.medalha) $('trofimg').src = 'http://192.168.4.79:8780/conquistas/medalha/' + t.medalha + '.png';
+    $('trofimg').onerror = function () { this.style.visibility = 'hidden'; };   /* box fora: esconde também */
+    $('trofnome').innerHTML = t.titulo || '';
+    $('trofdesc').innerHTML = t.descricao || '';
+    $('trofpts').innerHTML = '+' + (t.pontos || 0) + ' pontos · ' + (t.jogo || 'PS2');
+    $('trofeu').className = 'on';
+    clearTimeout(trofTimer);
+    trofTimer = setTimeout(function () { $('trofeu').className = ''; }, 7000);
+  });
+}
+trofeu();
+setInterval(trofeu, 2000);
+setTimeout(girarQuadro, 1500);
+setInterval(girarQuadro, 8000);            /* troca de cartão a cada 8 s */
+setTimeout(function () { setInterval(girarAgenda, 8000); }, 4000);   /* agenda também a cada 8 s, intercalada */
+setInterval(estreias, 10 * 60 * 1000);
 setInterval(relogio, 1000);
-setInterval(tempo, 5 * 60 * 1000);
+setInterval(tempo, 60 * 1000);   /* o tempo fica 5 min em cache no notebook; a agenda muda mais */
 setInterval(voz, 700);
 </script>
 </body>
