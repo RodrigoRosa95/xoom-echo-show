@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="br.jellyxoom" android:versionCode="10" android:versionName="1.9">
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="19" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:label="Jellyfin Xoom" android:icon="@drawable/icone"
+        android:theme="@android:style/Theme.Holo" android:largeHeap="true">
+        <activity android:name=".ListaActivity" android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="stateAlwaysHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".LoginActivity" android:label="Entrar no Jellyfin" />
+        <activity android:name=".TocarActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+    </application>
+</manifest>
