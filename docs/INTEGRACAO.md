@@ -41,7 +41,7 @@ assinada por 12 h → o Echo baixa o MP3 pela skill, que busca no Jellyfin. O ap
 `~/.alexa-jellyflix-filas.json`, e o painel lê esse arquivo em `/show/echo/estado`.
 
 **Letra em tempo real.** A posição é estimada a partir da hora do `PlaybackStarted` e do offset do `PlaybackStopped`, porque
-o Echo não informa a posição continuamente. A letra vem primeiro do Jellyfin (embutida na faixa) e depois do
+o Echo não informa a posição continuamente. A letra vem primeiro do Jellyfin (arquivo `.lrc` ao lado do áudio) e depois do
 [LRCLIB](https://lrclib.net), com cache em `painel/letras/`. O resultado do LRCLIB só é sincronizado se a duração da faixa
 bater em até 5 s; senão a letra aparece parada. O ajuste de ±0,5 s da tela vale para todas as faixas.
 
@@ -51,6 +51,11 @@ e a tela mostra o texto.
 
 **Voz no Echo.** A skill "meu tablet" recebe "Alexa, pede pro meu tablet...", e `alexa-tablet.js` repassa ao
 xoom-assistente em `127.0.0.1:8798/comando`.
+
+## Jellyfin
+
+O Jellyfin é o acervo da integração: música no Echo, letra, vídeos do app e TV ao vivo. A preparação do servidor, as
+bibliotecas, os arquivos `.lrc` e os canais gratuitos estão em [`jellyfin/README.md`](../jellyfin/README.md).
 
 ## Amazon Developer
 
@@ -111,7 +116,7 @@ apps são Java puro e o vídeo abre no MX Player.
 
 O app Xoom Show é só uma casca: **mudanças em `painel/show.html` não pedem APK novo**, basta reabrir o app.
 
-Na TV ao vivo, o app só mostra canais com número, que na instalação original são os das fontes gratuitas. O Jellyfin
+Na TV ao vivo, o app só mostra canais com número, que vêm das fontes gratuitas de `jellyfin/fast_tv.py`. O Jellyfin
 converte o canal para HLS em 480p.
 
 `vigia/vigia-xoom.sh` roda no cron a cada 2 minutos: reconecta o ADB, reabre o app parado ou travado e publica
@@ -136,6 +141,7 @@ pm2 start painel/xoom_painel.py --name xoom-painel --interpreter python3
 pm2 start assistente/assistente.py --name xoom-assistente --interpreter assistente/venv/bin/python
 pm2 start painel/movimento_garagem.py --name movimento-garagem --interpreter assistente/venv/bin/python
 pm2 start alexa/alexa-jellyflix.js --name alexa-jellyflix
+pm2 start jellyfin/fast_tv.py --name fast-tv --interpreter python3
 ```
 
 `.env.exemplo` lista as variáveis. A skill lê `alexa/.env`; o painel e o assistente leem `~/.env`.

@@ -1,7 +1,7 @@
 # Xoom Echo Show
 
 Transforma um tablet antigo (**Motorola Xoom, Android 4.4**, Tegra 2 sem NEON) numa espécie de **Echo Show**, integrando
-**Echo Dot 5 + Home Assistant + skills próprias na Amazon Developer + Claude Code**: tela fixa com relógio, previsão do
+**Echo Dot 5 + Home Assistant + Jellyfin + skills próprias na Amazon Developer + Claude Code**: tela fixa com relógio, previsão do
 tempo e atalhos, música do Jellyfin no Echo com letra em tempo real, assistente de voz e controle da casa. O trabalho
 pesado roda num notebook Linux na mesma rede; o tablet só mostra a tela, capta o microfone e abre os vídeos.
 
@@ -17,6 +17,7 @@ pesado roda num notebook Linux na mesma rede; o tablet só mostra a tela, capta 
 | `alexa/` | Skills da Alexa **meu cinema** (Jellyfin, Sonarr, Radarr, Jellyseerr, qBittorrent e música no Echo com `AudioPlayer`) e **meu tablet** (comandos para o Xoom), com modelos de interação e testes. |
 | `app-jellyfin/` | App **Jellyfin Xoom** (`br.jellyxoom`): cliente leve em 480p com TV ao vivo, que toca no MX Player. |
 | `app-youtube/` | App **YouTube Xoom** (`br.ytxoom`): usa a página `/yt` do painel. |
+| `jellyfin/` | [Guia do servidor](jellyfin/README.md): bibliotecas, letras `.lrc`, TV ao vivo e `fast_tv.py` (Pluto, Plex e canais abertos gratuitos). |
 | `vigia/` | `vigia-xoom.sh`: cron que reabre o app travado e publica o estado no Home Assistant. |
 | `docs/` | [Integração completa](docs/INTEGRACAO.md): arquitetura, Amazon Developer, Home Assistant, Claude Code e situação dos testes. |
 
@@ -55,7 +56,8 @@ real**, com ajuste de sincronia de ±0,5 s.
    `adb install -r XoomShow.apk`. Para o headset USB, copie `xoomshow-mic.sh` para `/data/local/` e instale
    `alsa-utils` num Debian em chroot (o app chama `su`).
 
-3. **Skills**: siga [Amazon Developer](docs/INTEGRACAO.md#amazon-developer). Em `alexa/`, rode `npm install`, crie o `.env`
+3. **Jellyfin**: siga [o guia do servidor](jellyfin/README.md).
+4. **Skills**: siga [Amazon Developer](docs/INTEGRACAO.md#amazon-developer). Em `alexa/`, rode `npm install`, crie o `.env`
    e inicie `alexa-jellyflix.js`.
 
 Os endereços (notebook `192.168.4.135`, Home Assistant `192.168.4.30`, entidades dos Echo) estão no topo dos
