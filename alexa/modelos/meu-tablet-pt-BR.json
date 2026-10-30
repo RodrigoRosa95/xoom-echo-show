@@ -1,0 +1,240 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "meu tablet",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.PauseIntent",
+          "samples": [
+            "pausar o vídeo",
+            "pausa o vídeo",
+            "pausar a música",
+            "pausa a música"
+          ]
+        },
+        {
+          "name": "AMAZON.ResumeIntent",
+          "samples": [
+            "continuar o vídeo",
+            "continua o vídeo",
+            "despausar",
+            "despausa"
+          ]
+        },
+        {
+          "name": "AbrirIntent",
+          "samples": [
+            "abrir {pedido}",
+            "abre {pedido}",
+            "abra {pedido}",
+            "abrir o {pedido}",
+            "abre o {pedido}",
+            "abrir a {pedido}",
+            "abre a {pedido}",
+            "entrar no {pedido}",
+            "entra no {pedido}",
+            "ir para o {pedido}",
+            "vai para o {pedido}"
+          ],
+          "slots": [
+            {
+              "name": "pedido",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "MostrarIntent",
+          "samples": [
+            "mostrar {pedido}",
+            "mostra {pedido}",
+            "mostre {pedido}",
+            "mostrar a {pedido}",
+            "mostra a {pedido}",
+            "mostrar o {pedido}",
+            "mostra o {pedido}",
+            "ver a {pedido}",
+            "ver o {pedido}"
+          ],
+          "slots": [
+            {
+              "name": "pedido",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "FecharIntent",
+          "samples": [
+            "fechar {pedido}",
+            "fecha {pedido}",
+            "feche {pedido}",
+            "fechar o {pedido}",
+            "fecha o {pedido}",
+            "fechar a {pedido}",
+            "fecha a {pedido}",
+            "sair do {pedido}",
+            "sai do {pedido}",
+            "desligar o {pedido}",
+            "desliga o {pedido}",
+            "parar o {pedido}",
+            "para o {pedido}",
+            "parar a {pedido}",
+            "para a {pedido}"
+          ],
+          "slots": [
+            {
+              "name": "pedido",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "TocarIntent",
+          "samples": [
+            "tocar {pedido}",
+            "toca {pedido}",
+            "toque {pedido}",
+            "tocar a {pedido}",
+            "toca a {pedido}",
+            "tocar o {pedido}",
+            "toca o {pedido}",
+            "colocar {pedido}",
+            "coloca {pedido}",
+            "coloque {pedido}",
+            "bota {pedido}",
+            "botar {pedido}",
+            "pôr {pedido}",
+            "procurar {pedido}",
+            "procura {pedido}",
+            "buscar {pedido}",
+            "busca {pedido}",
+            "assistir {pedido}",
+            "passar {pedido}",
+            "passa {pedido}"
+          ],
+          "slots": [
+            {
+              "name": "pedido",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "VolumeIntent",
+          "samples": [
+            "volume {numero}",
+            "volume em {numero}",
+            "volume no {numero}",
+            "colocar o volume em {numero}",
+            "coloca o volume em {numero}",
+            "põe o volume em {numero}",
+            "mudar o volume para {numero}",
+            "muda o volume para {numero}"
+          ],
+          "slots": [
+            {
+              "name": "numero",
+              "type": "AMAZON.NUMBER"
+            }
+          ]
+        },
+        {
+          "name": "AumentarVolumeIntent",
+          "samples": [
+            "aumentar o volume",
+            "aumenta o volume",
+            "aumentar o som",
+            "aumenta o som",
+            "mais alto",
+            "subir o volume",
+            "sobe o volume"
+          ]
+        },
+        {
+          "name": "AbaixarVolumeIntent",
+          "samples": [
+            "abaixar o volume",
+            "abaixa o volume",
+            "abaixar o som",
+            "abaixa o som",
+            "mais baixo",
+            "diminuir o volume",
+            "diminui o volume"
+          ]
+        },
+        {
+          "name": "TelaInicialIntent",
+          "samples": [
+            "tela inicial",
+            "voltar para a tela inicial",
+            "volta para a tela inicial",
+            "volta pra tela inicial",
+            "voltar pro início",
+            "mostrar o relógio",
+            "mostra o relógio",
+            "voltar para o show"
+          ]
+        },
+        {
+          "name": "PararTudoIntent",
+          "samples": [
+            "parar tudo",
+            "para tudo",
+            "fechar tudo",
+            "fecha tudo",
+            "desligar tudo",
+            "desliga tudo"
+          ]
+        },
+        {
+          "name": "AgendaIntent",
+          "samples": [
+            "qual meu próximo compromisso",
+            "qual é o meu próximo compromisso",
+            "o que tem na agenda",
+            "o que tem na minha agenda",
+            "meus compromissos",
+            "minha agenda"
+          ]
+        },
+        {
+          "name": "CameraIntent",
+          "samples": [
+            "câmera",
+            "a câmera",
+            "câmera da garagem",
+            "a câmera da garagem",
+            "ver a garagem",
+            "ver a câmera",
+            "ver quem está na garagem",
+            "olhar a garagem",
+            "abrir a câmera da garagem",
+            "abre a câmera da garagem"
+          ]
+        }
+      ],
+      "types": []
+    }
+  }
+}

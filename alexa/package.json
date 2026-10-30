@@ -1,0 +1,17 @@
+{
+  "name": "xoom-echo-show-alexa",
+  "version": "1.0.0",
+  "description": "Skills da Alexa do Xoom Echo Show: meu cinema (Jellyfin, Sonarr, Radarr, música no Echo) e meu tablet",
+  "main": "alexa-jellyflix.js",
+  "scripts": {
+    "start": "node alexa-jellyflix.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2"
+  }
+}

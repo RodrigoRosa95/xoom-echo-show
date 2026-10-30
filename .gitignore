@@ -5,3 +5,8 @@ modelos/
 __pycache__/
 *.log
 .env
+node_modules/
+letras/
+*.tmp
+*.bak*
+!alexa/modelos/

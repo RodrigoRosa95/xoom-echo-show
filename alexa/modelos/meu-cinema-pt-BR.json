@@ -1,0 +1,287 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "meu cinema",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.PauseIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.ResumeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NextIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.PreviousIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StartOverIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.LoopOnIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.LoopOffIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.ShuffleOnIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.ShuffleOffIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.RepeatIntent",
+          "samples": []
+        },
+        {
+          "name": "PedirIntent",
+          "samples": [
+            "baixar {titulo}",
+            "baixa {titulo}",
+            "pedir {titulo}",
+            "adicionar {titulo}",
+            "adiciona {titulo}",
+            "quero o filme {titulo}",
+            "quero a série {titulo}",
+            "pedir o filme {titulo}",
+            "pedir a série {titulo}"
+          ],
+          "slots": [
+            {
+              "name": "titulo",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "ChegouIntent",
+          "samples": [
+            "já chegou {titulo}",
+            "chegou {titulo}",
+            "se o episódio novo de {titulo} já chegou",
+            "o episódio novo de {titulo} já chegou",
+            "tem episódio novo de {titulo}",
+            "saiu episódio de {titulo}",
+            "já saiu {titulo}"
+          ],
+          "slots": [
+            {
+              "name": "titulo",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "EstreiasIntent",
+          "samples": [
+            "o que estreia esta semana",
+            "o que estreia essa semana",
+            "estreias da semana",
+            "quais as estreias",
+            "quais são as estreias",
+            "o que tem de novo esta semana"
+          ]
+        },
+        {
+          "name": "DubladoIntent",
+          "samples": [
+            "{titulo} já tem dublado",
+            "{titulo} tem dublado",
+            "tem dublado de {titulo}",
+            "se {titulo} tem dublado",
+            "dublado de {titulo}",
+            "procura dublado de {titulo}"
+          ],
+          "slots": [
+            {
+              "name": "titulo",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "DownloadsIntent",
+          "samples": [
+            "como estão os downloads",
+            "como está a fila",
+            "o que está baixando",
+            "fila de downloads",
+            "status dos downloads"
+          ]
+        },
+        {
+          "name": "TocarTvIntent",
+          "samples": [
+            "coloca {titulo} na tv",
+            "coloque {titulo} na tv",
+            "bota {titulo} na tv",
+            "passa {titulo} na tv",
+            "toca {titulo} na tv",
+            "colocar {titulo} na televisão",
+            "assistir {titulo} na tv"
+          ],
+          "slots": [
+            {
+              "name": "titulo",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "ContinuarAssistindoIntent",
+          "samples": [
+            "o que eu estava assistindo",
+            "continuar assistindo",
+            "continua de onde eu parei",
+            "onde eu parei"
+          ]
+        },
+        {
+          "name": "TvPausarIntent",
+          "samples": [
+            "pausa a tv",
+            "pausar a tv",
+            "pausa o filme",
+            "pausa o episódio",
+            "pausa a televisão"
+          ]
+        },
+        {
+          "name": "TvContinuarIntent",
+          "samples": [
+            "continua a tv",
+            "despausa a tv",
+            "volta a tocar na tv",
+            "continua o filme",
+            "continua o episódio"
+          ]
+        },
+        {
+          "name": "TvVoltarIntent",
+          "samples": [
+            "volta trinta segundos",
+            "volta um pouco",
+            "volta a cena",
+            "retrocede trinta segundos"
+          ]
+        },
+        {
+          "name": "TvLegendaIntent",
+          "samples": [
+            "liga a legenda",
+            "liga a legenda em português",
+            "legenda em português",
+            "coloca legenda em português",
+            "ativa a legenda"
+          ]
+        },
+        {
+          "name": "MusicaIntent",
+          "samples": [
+            "toca {busca}",
+            "tocar {busca}",
+            "toca músicas de {busca}",
+            "toca a música {busca}",
+            "toca o álbum {busca}"
+          ],
+          "slots": [
+            {
+              "name": "busca",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        },
+        {
+          "name": "MusicaTopIntent",
+          "samples": [
+            "toca o top cinquenta",
+            "toca o top",
+            "toca as mais tocadas",
+            "toca música",
+            "toca uma música",
+            "toca o top cinquenta brasil"
+          ]
+        },
+        {
+          "name": "SugestaoIntent",
+          "samples": [
+            "me indica um filme",
+            "me indica um filme dublado",
+            "sugere um filme",
+            "o que eu assisto hoje",
+            "um filme dublado",
+            "indica um filme"
+          ]
+        },
+        {
+          "name": "PausarDownloadsIntent",
+          "samples": [
+            "pausa os downloads",
+            "pausar os downloads",
+            "para os downloads",
+            "pausa os torrents"
+          ]
+        },
+        {
+          "name": "RetomarDownloadsIntent",
+          "samples": [
+            "retoma os downloads",
+            "volta os downloads",
+            "continua os downloads",
+            "libera os downloads",
+            "retomar os downloads"
+          ]
+        },
+        {
+          "name": "StatusIntent",
+          "samples": [
+            "está tudo funcionando",
+            "tá tudo funcionando",
+            "status do servidor",
+            "como está o servidor",
+            "tudo certo com o servidor"
+          ]
+        }
+      ],
+      "types": []
+    }
+  }
+}
